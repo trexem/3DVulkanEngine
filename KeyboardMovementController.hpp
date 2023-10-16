@@ -13,8 +13,8 @@ namespace engine {
 			int moveRight = SDL_SCANCODE_D;
 			int moveForward = SDL_SCANCODE_W;
 			int moveBackward = SDL_SCANCODE_S;
-			int moveUp = SDL_SCANCODE_LSHIFT;
-			int moveDown = SDL_SCANCODE_SPACE;
+			int moveUp = SDL_SCANCODE_SPACE;
+			int moveDown = SDL_SCANCODE_LSHIFT;
 			int lookLeft = SDL_SCANCODE_LEFT;
 			int lookRight = SDL_SCANCODE_RIGHT;
 			int lookUp= SDL_SCANCODE_UP;

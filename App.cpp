@@ -96,71 +96,21 @@ namespace engine {
         }
     }
 
-    std::unique_ptr<Model> createCubeModel(Device& device, glm::vec3 offset) {
-        std::vector<Model::Vertex> vertices{
-
-            // left face (white)
-            {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-            {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-            {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-            {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-            {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
-            {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-
-            // right face (yellow)
-            {{.5f, -.5f, -.5f}, {1.f, .8f, .0f}},
-            {{.5f, .5f, .5f}, {1.f, .8f, .0f}},
-            {{.5f, -.5f, .5f}, {1.f, .8f, .0f}},
-            {{.5f, -.5f, -.5f}, {1.f, .8f, .0f}},
-            {{.5f, .5f, -.5f}, {1.f, .8f, .0f}},
-            {{.5f, .5f, .5f}, {1.f, .8f, .0f}},
-
-            // top face (orange, remember y axis points down)
-            {{-.5f, -.5f, -.5f}, {1.f, .34f, .0f}},
-            {{.5f, -.5f, .5f}, {1.f, .34f, .0f}},
-            {{-.5f, -.5f, .5f}, {1.f, .34f, .0f}},
-            {{-.5f, -.5f, -.5f}, {1.f, .34f, .0f}},
-            {{.5f, -.5f, -.5f}, {1.f, .34f, .0f}},
-            {{.5f, -.5f, .5f}, {1.f, .34f, .0f}},
-
-            // bottom face (red)
-            {{-.5f, .5f, -.5f}, {.8f, .0f, .0f}},
-            {{.5f, .5f, .5f}, {.8f, .0f, .0f}},
-            {{-.5f, .5f, .5f}, {.8f, .0f, .0f}},
-            {{-.5f, .5f, -.5f}, {.8f, .0f, .0f}},
-            {{.5f, .5f, -.5f}, {.8f, .0f, .0f}},
-            {{.5f, .5f, .5f}, {.8f, .0f, .0f}},
-
-            // nose face (blue)
-            {{-.5f, -.5f, 0.5f}, {.0f, .1f, .8f}},
-            {{.5f, .5f, 0.5f}, {.0f, .1f, .8f}},
-            {{-.5f, .5f, 0.5f}, {.0f, .1f, .8f}},
-            {{-.5f, -.5f, 0.5f}, {.0f, .1f, .8f}},
-            {{.5f, -.5f, 0.5f}, {.0f, .1f, .8f}},
-            {{.5f, .5f, 0.5f}, {.0f, .1f, .8f}},
-
-            // tail face (green)
-            {{-.5f, -.5f, -0.5f}, {.0f, .8f, .0f}},
-            {{.5f, .5f, -0.5f}, {.0f, .8f, .0f}},
-            {{-.5f, .5f, -0.5f}, {.0f, .8f, .0f}},
-            {{-.5f, -.5f, -0.5f}, {.0f, .8f, .0f}},
-            {{.5f, -.5f, -0.5f}, {.0f, .8f, .0f}},
-            {{.5f, .5f, -0.5f}, {.0f, .8f, .0f}},
-
-        };
-        for (auto& v : vertices) {
-            v.position += offset;
-        }
-        return std::make_unique<Model>(device, vertices);
-    }
-
     void App::loadGameObjects() {
-        std::shared_ptr<Model> model = createCubeModel(m_device, { .0f,.0f,.0f });
+        std::shared_ptr<Model> model = 
+            Model::createModelFromFile(m_device, "models/flat_vase.obj");
+        auto flatVase = GameObject::createGameObject();
+        flatVase.model = model;
+        flatVase.transform.translation = { .0f,.5f,1.5f };
+        flatVase.transform.scale = { 3.0f, 1.5, 3.0 };
+        m_gameObjects.push_back(std::move(flatVase));
 
-        auto cube = GameObject::createGameObject();
-        cube.model = model;
-        cube.transform.translation = { .0f,.0f,1.5f };
-        cube.transform.scale = { .5f, .5f, .5f };
-        m_gameObjects.push_back(std::move(cube));
+        model =
+            Model::createModelFromFile(m_device, "models/smooth_vase.obj");
+        auto smoothVase = GameObject::createGameObject();
+        smoothVase.model = model;
+        smoothVase.transform.translation = { .0f,.5f,.5f };
+        smoothVase.transform.scale = { 3.0f, 1.5, 3.0 };
+        m_gameObjects.push_back(std::move(smoothVase));
     }
 } // namespace engine
