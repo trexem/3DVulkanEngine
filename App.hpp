@@ -17,6 +17,7 @@ namespace engine {
 		App& operator=(const App&) = delete;
 
 		void run();
+		void handleSDLEvents();
 
 	private:
 		void loadGameObjects();

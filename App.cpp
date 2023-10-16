@@ -21,45 +21,21 @@ namespace engine {
 
 	void App::run() {
         SimpleRenderSystem simpleRenderSystem(m_device, renderer.getSwapChainRenderPass());
+        Camera camera{};
+        /*camera.setViewDirection(glm::vec3(0.f), glm::vec3(.5f, .0f, 1.f));*/
+        camera.setViewTarget(glm::vec3(-1.f,-20.f,2.f), glm::vec3(.0f, .0f, 1.5f));
         while (m_window.m_stillRunning) {
-            SDL_Event event;
-            while (SDL_PollEvent(&event)) {
-
-                switch (event.type) {
-
-                case SDL_QUIT:
-                    m_window.m_stillRunning = false;
-                    break;
-
-                case SDL_KEYDOWN:
-                    switch (event.key.keysym.sym) {
-                    case SDLK_q:
-                        m_window.m_stillRunning = false;
-                        break;
-
-                    default:
-                        //Do nothing
-                        break;
-                    }
-
-                    break;
-
-                case SDL_WINDOWEVENT:
-                    if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED &&
-                        event.window.windowID == SDL_GetWindowID(m_window.window)) {
-                        m_window.framebufferResizeCallback();
-                        m_device.recreateSurface();
-                    }
-
-                default:
-                    // Do nothing.
-                    break;
-                }
-            }
-
+            handleSDLEvents();
+            float aspect = renderer.getAspectRatio();
+            /*camera.setOrthographicProjection(
+                -aspect, aspect, 
+                -1, 1, 
+                -1, 1
+            );*/
+            camera.setPerspectiveProjection(glm::radians(50.f), aspect, .1f, 100.f);
             if (auto commandBuffer = renderer.beginFrame()) {
                 renderer.beginSwapChainRenderPass(commandBuffer);
-                simpleRenderSystem.renderGameObjects(commandBuffer, m_gameObjects);
+                simpleRenderSystem.renderGameObjects(commandBuffer, m_gameObjects, camera);
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();
             }
@@ -67,6 +43,43 @@ namespace engine {
 
         vkDeviceWaitIdle(m_device.device());
 	}
+
+    void App::handleSDLEvents() {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+
+            switch (event.type) {
+
+            case SDL_QUIT:
+                m_window.m_stillRunning = false;
+                break;
+
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym) {
+                case SDLK_q:
+                    m_window.m_stillRunning = false;
+                    break;
+
+                default:
+                    //Do nothing
+                    break;
+                }
+
+                break;
+
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED &&
+                    event.window.windowID == SDL_GetWindowID(m_window.window)) {
+                    m_window.framebufferResizeCallback();
+                    m_device.recreateSurface();
+                }
+
+            default:
+                // Do nothing.
+                break;
+            }
+        }
+    }
 
     std::unique_ptr<Model> createCubeModel(Device& device, glm::vec3 offset) {
         std::vector<Model::Vertex> vertices{
@@ -131,7 +144,7 @@ namespace engine {
 
         auto cube = GameObject::createGameObject();
         cube.model = model;
-        cube.transform.translation = { .0f,.0f,.5f };
+        cube.transform.translation = { .0f,.0f,1.5f };
         cube.transform.scale = { .5f, .5f, .5f };
         m_gameObjects.push_back(std::move(cube));
     }
