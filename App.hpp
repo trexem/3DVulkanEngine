@@ -2,6 +2,7 @@
 
 #include "Renderer.hpp"
 #include "GameObject.hpp"
+#include "KeyboardMovementController.hpp"
 
 namespace engine {
 

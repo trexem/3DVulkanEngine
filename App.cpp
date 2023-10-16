@@ -1,6 +1,7 @@
 #include "App.hpp"
 
 #include "SimpleRenderSystem.hpp"
+#include "KeyboardMovementController.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -9,6 +10,7 @@
 
 #include <stdexcept>
 #include <array>
+#include <chrono>
 #include <cassert>
 
 namespace engine {
@@ -22,16 +24,29 @@ namespace engine {
 	void App::run() {
         SimpleRenderSystem simpleRenderSystem(m_device, renderer.getSwapChainRenderPass());
         Camera camera{};
-        /*camera.setViewDirection(glm::vec3(0.f), glm::vec3(.5f, .0f, 1.f));*/
-        camera.setViewTarget(glm::vec3(-1.f,-20.f,2.f), glm::vec3(.0f, .0f, 1.5f));
+
+        auto viewerObject = GameObject::createGameObject();
+        KeyboardMovementController cameraController {};
+        auto currentTime = std::chrono::high_resolution_clock::now();
         while (m_window.m_stillRunning) {
+            KeyboardMovementController::KeyMappings kMap{};
             handleSDLEvents();
+            const Uint8* current_key_states = SDL_GetKeyboardState(NULL);
+
+            auto newTime = std::chrono::high_resolution_clock::now();
+            float frameTime = 
+                std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            currentTime = newTime;
+
+            cameraController.moveInPlaneXZ(
+                current_key_states, frameTime, viewerObject
+            );
+            camera.setViewYXZ(
+                viewerObject.transform.translation, viewerObject.transform.rotation
+            );
+
+
             float aspect = renderer.getAspectRatio();
-            /*camera.setOrthographicProjection(
-                -aspect, aspect, 
-                -1, 1, 
-                -1, 1
-            );*/
             camera.setPerspectiveProjection(glm::radians(50.f), aspect, .1f, 100.f);
             if (auto commandBuffer = renderer.beginFrame()) {
                 renderer.beginSwapChainRenderPass(commandBuffer);
@@ -56,7 +71,7 @@ namespace engine {
 
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym) {
-                case SDLK_q:
+                case SDLK_ESCAPE:
                     m_window.m_stillRunning = false;
                     break;
 
