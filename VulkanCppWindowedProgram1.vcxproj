@@ -164,33 +164,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="KeyboardMovementController.cpp" />
-    <ClCompile Include="mainTemplateVulkan.cpp" />
+    <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\GameObject.cpp" />
+    <ClCompile Include="src\KeyboardMovementController.cpp" />
+    <ClCompile Include="src\mainTemplateVulkan.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Device.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Pipeline.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="SimpleRenderSystem.cpp" />
-    <ClCompile Include="SwapChain.cpp" />
-    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="src\Device.cpp" />
+    <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\Pipeline.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\SimpleRenderSystem.cpp" />
+    <ClCompile Include="src\SwapChain.cpp" />
+    <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.hpp" />
-    <ClInclude Include="Camera.hpp" />
-    <ClInclude Include="Device.hpp" />
-    <ClInclude Include="GameObject.hpp" />
-    <ClInclude Include="KeyboardMovementController.hpp" />
-    <ClInclude Include="Model.hpp" />
-    <ClInclude Include="Pipeline.hpp" />
-    <ClInclude Include="Renderer.hpp" />
-    <ClInclude Include="SimpleRenderSystem.hpp" />
-    <ClInclude Include="SwapChain.hpp" />
-    <ClInclude Include="utils.hpp" />
-    <ClInclude Include="Window.hpp" />
+    <ClInclude Include="include\App.hpp" />
+    <ClInclude Include="include\Camera.hpp" />
+    <ClInclude Include="include\Device.hpp" />
+    <ClInclude Include="include\GameObject.hpp" />
+    <ClInclude Include="include\KeyboardMovementController.hpp" />
+    <ClInclude Include="include\Model.hpp" />
+    <ClInclude Include="include\Pipeline.hpp" />
+    <ClInclude Include="include\Renderer.hpp" />
+    <ClInclude Include="include\SimpleRenderSystem.hpp" />
+    <ClInclude Include="include\SwapChain.hpp" />
+    <ClInclude Include="include\utils.hpp" />
+    <ClInclude Include="include\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="compile.bat" />
@@ -206,6 +206,7 @@
     <LocalDebuggerEnvironment>PATH=$(VULKAN_SDK)\Bin
 $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);E:\Code\VulkanSDL\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerEnvironment>PATH=$(VULKAN_SDK)\Bin
