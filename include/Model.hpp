@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Device.hpp"
+#include "Buffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -51,13 +51,11 @@ namespace engine {
 		void createIndexBuffers(const std::vector<uint32_t>& indices);
 		Device& m_device;
 
-		VkBuffer vertexBuffer;
-		VkDeviceMemory vertexBufferMemory;
+		std::unique_ptr<Buffer> vertexBuffer;
 		uint32_t vertexCount;
 
+		std::unique_ptr<Buffer> indexBuffer;
 		bool hasIndexBuffer = false;
-		VkBuffer indexBuffer;
-		VkDeviceMemory indexBufferMemory;
 		uint32_t indexCount;
 	};
 }

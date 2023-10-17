@@ -112,5 +112,13 @@ namespace engine {
         smoothVase.transform.translation = { .0f,.5f,.5f };
         smoothVase.transform.scale = { 3.0f, 1.5, 3.0 };
         m_gameObjects.push_back(std::move(smoothVase));
+
+        model =
+            Model::createModelFromFile(m_device, "models/colored_cube.obj");
+        auto cube = GameObject::createGameObject();
+        cube.model = model;
+        cube.transform.translation = { -1.5f,.5f,-1.5f };
+        cube.transform.scale = { 1.0f, 1.0, 1.0 };
+        m_gameObjects.push_back(std::move(cube));
     }
 } // namespace engine
