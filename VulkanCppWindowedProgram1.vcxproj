@@ -164,6 +164,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Descriptors.cpp" />
     <ClCompile Include="src\Buffer.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\Camera.cpp" />
@@ -180,10 +181,12 @@
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Descriptors.hpp" />
     <ClInclude Include="include\Buffer.hpp" />
     <ClInclude Include="include\App.hpp" />
     <ClInclude Include="include\Camera.hpp" />
     <ClInclude Include="include\Device.hpp" />
+    <ClInclude Include="include\FrameInfo.hpp" />
     <ClInclude Include="include\GameObject.hpp" />
     <ClInclude Include="include\KeyboardMovementController.hpp" />
     <ClInclude Include="include\Model.hpp" />

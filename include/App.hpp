@@ -3,6 +3,7 @@
 #include "Renderer.hpp"
 #include "GameObject.hpp"
 #include "KeyboardMovementController.hpp"
+#include "Descriptors.hpp"
 
 namespace engine {
 
@@ -26,6 +27,8 @@ namespace engine {
 		Window m_window{ WIDTH, HEIGHT, "Hello Vulkan!" };
 		Device m_device{ m_window };
 		Renderer renderer{ m_window, m_device };
+
+		std::unique_ptr<DescriptorPool> globalPool{};
 		std::vector<GameObject> m_gameObjects;
 	};
 } // namespace engine

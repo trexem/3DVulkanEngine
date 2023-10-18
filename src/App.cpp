@@ -12,17 +12,53 @@
 #include <array>
 #include <chrono>
 #include <cassert>
+#include <numeric>
 
 namespace engine {
 
+    struct GlobalUbo {
+        glm::mat4 projectionView{ 1.f };
+        glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.f, -2.f, -1.f });
+    };
+
     App::App() {
+        globalPool = DescriptorPool::Builder(m_device)
+            .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .build();
         loadGameObjects();
     }
 
     App::~App() {}
 
 	void App::run() {
-        SimpleRenderSystem simpleRenderSystem(m_device, renderer.getSwapChainRenderPass());
+        std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        for (int i = 0; i < uboBuffers.size(); i++) {
+            uboBuffers[i] = std::make_unique<Buffer>(
+                m_device,
+                sizeof(GlobalUbo),
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+                );
+            uboBuffers[i]->map();
+        }
+
+        auto globalSetLayout = DescriptorSetLayout::Builder(m_device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .build();
+
+        std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        for (int i = 0; i < globalDescriptorSets.size(); i++) {
+            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            DescriptorWriter(*globalSetLayout, *globalPool)
+                .writeBuffer(0, &bufferInfo)
+                .build(globalDescriptorSets[i]);
+        }
+
+        SimpleRenderSystem simpleRenderSystem{ 
+            m_device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()
+        };
         Camera camera{};
 
         auto viewerObject = GameObject::createGameObject();
@@ -49,8 +85,23 @@ namespace engine {
             float aspect = renderer.getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.f), aspect, .1f, 100.f);
             if (auto commandBuffer = renderer.beginFrame()) {
+                int frameIndex = renderer.getFrameIndex();
+                FrameInfo frameInfo{
+                    frameIndex,
+                    frameTime,
+                    commandBuffer,
+                    camera,
+                    globalDescriptorSets[frameIndex]
+                };
+                //update
+                GlobalUbo ubo{};
+                ubo.projectionView = camera.getProjection() * camera.getView();
+                uboBuffers[frameIndex]->writeToBuffer(&ubo);
+                uboBuffers[frameIndex]->flush();
+
+                //render
                 renderer.beginSwapChainRenderPass(commandBuffer);
-                simpleRenderSystem.renderGameObjects(commandBuffer, m_gameObjects, camera);
+                simpleRenderSystem.renderGameObjects(frameInfo, m_gameObjects);
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();
             }

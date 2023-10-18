@@ -2,26 +2,29 @@
 
 #include "Pipeline.hpp"
 #include "GameObject.hpp"
-#include "Camera.hpp"
+#include "FrameInfo.hpp"
 
 namespace engine {
 
 	class SimpleRenderSystem {
 	public:
 
-		SimpleRenderSystem(Device& device, VkRenderPass renderPass);
+		SimpleRenderSystem(
+			Device& device, 
+			VkRenderPass renderPass,
+			VkDescriptorSetLayout globalSetLayout
+		);
 		~SimpleRenderSystem();
 
 		SimpleRenderSystem(const SimpleRenderSystem&) = delete;
 		SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
 
 		void renderGameObjects(
-			VkCommandBuffer commandBuffer,
-			std::vector<GameObject>& gameObjects,
-			const Camera& camera
+			FrameInfo& frameInfo, 
+			std::vector<GameObject>& gameObjects
 		);
 	private:
-		void createPipelineLayout();
+		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);
 
 		Device& m_device;
