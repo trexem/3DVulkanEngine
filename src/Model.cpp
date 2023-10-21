@@ -10,6 +10,10 @@
 #include <cstring>
 #include <unordered_map>
 
+#ifndef ENGINE_DIR
+#define ENGINE_DIR "../"
+#endif // !ENGINE_DIR
+
 namespace std {
 	template<> 
 	struct hash<engine::Model::Vertex> {
@@ -67,7 +71,8 @@ namespace engine {
 		Device& device, const std::string& filepath
 	) {
 		Builder builder{};
-		builder.loadModel(filepath);
+		std::string enginePath = ENGINE_DIR + filepath;
+		builder.loadModel(enginePath);
 		return std::make_unique<Model>(device, builder);
 	}
 

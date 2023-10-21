@@ -7,6 +7,10 @@
 #include <iostream>
 #include <stdexcept>
 
+#ifndef ENGINE_DIR
+#define ENGINE_DIR "../"
+#endif // !ENGINE_DIR
+
 namespace engine {
 
 	Pipeline::Pipeline(
@@ -29,10 +33,11 @@ namespace engine {
 	}
 
 	std::vector<char> Pipeline::readFile(const std::string& filepath) {
-		std::ifstream file{ filepath, std::ios::ate | std::ios::binary };
+		std::string enginePath = ENGINE_DIR + filepath;
+		std::ifstream file{ enginePath, std::ios::ate | std::ios::binary };
 
 		if (!file.is_open()) {
-			throw std::runtime_error("failed to open file: " + filepath);
+			throw std::runtime_error("failed to open file: " + enginePath);
 		}
 		//file.seekg(0);
 		size_t fileSize = static_cast<size_t>(file.tellg());

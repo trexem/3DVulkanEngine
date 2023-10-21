@@ -59,8 +59,8 @@ namespace engine {
         pipelineConfig.pipelineLayout = m_pipelineLayout;
         m_pipeline = std::make_unique<Pipeline>(
             m_device,
-            "E:/Code/VulkanSDL/shaders/simple_shader.vert.spv",
-            "E:/Code/VulkanSDL/shaders/simple_shader.frag.spv",
+            "shaders/simple_shader.vert.spv",
+            "shaders/simple_shader.frag.spv",
             pipelineConfig);
     }
 
