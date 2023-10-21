@@ -6,23 +6,21 @@
 
 namespace engine {
 
-	class SimpleRenderSystem {
+	class PointLightSystem {
 	public:
 
-		SimpleRenderSystem(
+		PointLightSystem(
 			Device& device, 
 			VkRenderPass renderPass,
 			VkDescriptorSetLayout globalSetLayout
 		);
-		~SimpleRenderSystem();
+		~PointLightSystem();
 
-		SimpleRenderSystem(const SimpleRenderSystem&) = delete;
-		SimpleRenderSystem& operator=(const SimpleRenderSystem&) = delete;
+		PointLightSystem(const PointLightSystem&) = delete;
+		PointLightSystem& operator=(const PointLightSystem&) = delete;
 
-		void renderGameObjects(
-			FrameInfo& frameInfo, 
-			std::vector<GameObject>& gameObjects
-		);
+		void update(FrameInfo& frameInfo, GlobalUbo &ubo);
+		void render(FrameInfo& frameInfo);
 	private:
 		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 		void createPipeline(VkRenderPass renderPass);

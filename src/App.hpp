@@ -29,6 +29,6 @@ namespace engine {
 		Renderer renderer{ m_window, m_device };
 
 		std::unique_ptr<DescriptorPool> globalPool{};
-		std::vector<GameObject> m_gameObjects;
+		GameObject::Map m_gameObjects;
 	};
 } // namespace engine

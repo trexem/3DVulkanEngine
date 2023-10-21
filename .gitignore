@@ -365,7 +365,11 @@ FodyWeavers.xsd
 build/*
 
 #Shaders
-.spv
+.vert.spv
+.frag.spv
 
 #Visual
 .vcxproj
+
+#VsCode
+.vscode

@@ -9,11 +9,17 @@ layout(location = 0) out vec3 outColor;
 layout(location = 1) out vec3 outPosWorld;
 layout(location = 2) out vec3 outNormalWorld;
 
+struct PointLight {
+    vec4 position;
+    vec4 color;
+};
+
 layout(set = 0, binding = 0) uniform GlobalUbo {
-	mat4 projectionView;
+	mat4 projection;
+	mat4 view;
     vec4 ambientLightColor;
-    vec3 lightPosition;
-    vec4 lightColor;
+    PointLight pointLights[10];
+    int numLights;
 } ubo;
 
 layout(push_constant) uniform Push {
@@ -24,7 +30,7 @@ layout(push_constant) uniform Push {
 void main() {
 	vec4 positionWorld = push.modelMatrix * vec4(position, 1.0);
 
-	gl_Position = ubo.projectionView * positionWorld;
+	gl_Position = ubo.projection * ubo.view * positionWorld;
 	outPosWorld = positionWorld.xyz;
 	outColor = inColor;
 	outNormalWorld = normalize(mat3(push.normalMatrix) * normal);
