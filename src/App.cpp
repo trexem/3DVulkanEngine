@@ -95,7 +95,7 @@ namespace engine
                     commandBuffer,
                     camera,
                     globalDescriptorSets[frameIndex],
-                    m_gameObjects};
+                    entityManager};
                 // update
                 GlobalUbo ubo{};
                 ubo.projection = camera.getProjection();
@@ -163,27 +163,50 @@ namespace engine
     {
         std::shared_ptr<Model> model =
             Model::createModelFromFile(m_device, "models/flat_vase.obj");
-        auto flatVase = GameObject::createGameObject();
-        flatVase.model = model;
-        flatVase.transform.translation = {-.5f, .5f, 0.f};
-        flatVase.transform.scale = {3.0f, 1.5, 3.0};
-        m_gameObjects.emplace(flatVase.getId(), std::move(flatVase));
+        
+        uint32_t flatVase = entityManager.createEntity();
+        
+        entityManager.addComponent(flatVase, ComponentType::Model);
+        ModelComponent flatVaseModel;
+        flatVaseModel.model = model;
+        entityManager.setComponentData(flatVase, flatVaseModel);
 
-        model =
-            Model::createModelFromFile(m_device, "models/smooth_vase.obj");
-        auto smoothVase = GameObject::createGameObject();
-        smoothVase.model = model;
-        smoothVase.transform.translation = {.5f, .5f, .0f};
-        smoothVase.transform.scale = {3.0f, 1.5, 3.0};
-        m_gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
+        entityManager.addComponent(flatVase, ComponentType::Transform);
+        TransformComponent flatVaseTransform{};
+        flatVaseTransform.translation = {-.5f, .5f, 0.f};
+        flatVaseTransform.scale = {3.0f, 1.5, 3.0};
+        entityManager.setComponentData(flatVase, flatVaseTransform);
+
+         model =
+             Model::createModelFromFile(m_device, "models/smooth_vase.obj");
+
+        uint32_t smoothVase = entityManager.createEntity();
+        
+        entityManager.addComponent(smoothVase, ComponentType::Model);
+        ModelComponent smoothVaseModel;
+        smoothVaseModel.model = model;
+        entityManager.setComponentData(smoothVase, smoothVaseModel);
+
+        entityManager.addComponent(smoothVase, ComponentType::Transform);
+        TransformComponent smoothVaseTransform{};
+        smoothVaseTransform.translation = {.5f, .5f, .0f};
+        smoothVaseTransform.scale = {3.0f, 1.5, 3.0};
+        entityManager.setComponentData(smoothVase, smoothVaseTransform);
 
         model =
             Model::createModelFromFile(m_device, "models/Quad.obj");
-        auto floor = GameObject::createGameObject();
-        floor.model = model;
-        floor.transform.translation = {0.f, .5f, 0.f};
-        floor.transform.scale = {5.0f, 1.0, 5.0};
-        m_gameObjects.emplace(floor.getId(), std::move(floor));
+        uint32_t floor = entityManager.createEntity();
+        
+        entityManager.addComponent(floor, ComponentType::Model);
+        ModelComponent floorModel;
+        floorModel.model = model;
+        entityManager.setComponentData(floor, floorModel);
+
+        entityManager.addComponent(floor, ComponentType::Transform);
+        TransformComponent floorTransform{};
+        floorTransform.translation = {0.f, .5f, 0.f};
+        floorTransform.scale = {5.0f, 1.0, 5.0};
+        entityManager.setComponentData(floor, floorTransform);
 
         std::vector<glm::vec3> lightColors{
             {.8f, 0.f, 0.f},
@@ -193,16 +216,26 @@ namespace engine
             {0.f, .8f, .8f},
             {.8f, 0.f, 0.8f},
         };
+        std::vector<ComponentType> comps {
+            ComponentType::PointLight,
+            ComponentType::Transform,
+        };
         for (int i = 0; i < lightColors.size(); i++)
         {
-            auto pointLight = GameObject::makePointLight(1.f);
+            uint32_t plId = entityManager.createEntity();
+            entityManager.addComponents(plId, comps);
+            PointLightComponent pointLight{};
+            TransformComponent plTComp{};
             pointLight.color = lightColors[i];
+            pointLight.lightIntensity = 3.f;
             auto rotateLight = glm::rotate(
                 glm::mat4(1.f),
                 (i * glm::two_pi<float>()) / lightColors.size(),
                 {0.f, -1.f, 0.f});
-            pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
-            m_gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+            plTComp.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+            plTComp.scale.x = .1f;
+            entityManager.setComponentData(plId, pointLight);
+            entityManager.setComponentData(plId, plTComp);
         }
     }
 } // namespace engine

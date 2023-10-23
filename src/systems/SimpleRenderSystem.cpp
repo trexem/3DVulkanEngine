@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <array>
 #include <cassert>
+#include <iostream>
 
 namespace engine {
 
@@ -79,23 +80,26 @@ namespace engine {
 
         auto projectionView = frameInfo.camera.getProjection() * frameInfo.camera.getView();
 
-        for (auto& kv : frameInfo.gameObjects) {
-            auto& obj = kv.second;
-            if(obj.model == nullptr) continue;
-            SimplePushConstantData push{};
-            push.modelMatrix = obj.transform.mat4();
-            push.normalMatrix = obj.transform.normalMatrix();
+        for (const uint32_t entityID : frameInfo.entityManager.getEntitiesWithComponent(ComponentType::Model)) {
+            if (frameInfo.entityManager.entityExists(entityID)) {
+                ModelComponent modelComponent = frameInfo.entityManager.getComponentData<ModelComponent>(entityID);
+                TransformComponent tranformComponent = frameInfo.entityManager.getComponentData<TransformComponent>(entityID);
 
-            vkCmdPushConstants(
-                frameInfo.commandBuffer,
-                m_pipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(SimplePushConstantData),
-                &push
-            );
-            obj.model->bind(frameInfo.commandBuffer);
-            obj.model->draw(frameInfo.commandBuffer);
+                SimplePushConstantData push{};
+                push.modelMatrix = tranformComponent.mat4();
+                push.normalMatrix = tranformComponent.normalMatrix();
+
+                vkCmdPushConstants(
+                    frameInfo.commandBuffer,
+                    m_pipelineLayout,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0,
+                    sizeof(SimplePushConstantData),
+                    &push
+                );
+                modelComponent.model->bind(frameInfo.commandBuffer);
+                modelComponent.model->draw(frameInfo.commandBuffer);
+            }
         }
     }
 } // namespace engine

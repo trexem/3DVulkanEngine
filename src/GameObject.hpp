@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.hpp"
+#include "Components.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -9,20 +10,7 @@
 
 namespace engine {
 
-	struct TransformComponent {
-		glm::vec3 translation{};
-		glm::vec3 scale{ 1.f, 1.f, 1.f };
-		glm::vec3 rotation;
-		glm::mat4 mat4();
-		glm::mat3 normalMatrix();
-	};
-
-	struct PointLightComponent {
-		float lightIntensity = 1.0f;
-	};
-
-	class GameObject
-	{
+	class GameObject {
 	public:
 		using id_t = unsigned int;
 		using Map = std::unordered_map<id_t, GameObject>;

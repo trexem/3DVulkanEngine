@@ -79,19 +79,18 @@ namespace engine
             frameInfo.frameTime,
             {0.f, -1.f, 0.f});
         int lightIndex = 0;
-        for (auto &kv : frameInfo.gameObjects)
+        for (auto &entityId : frameInfo.entityManager.getEntitiesWithComponent(ComponentType::PointLight))
         {
-            auto &obj = kv.second;
-            if (obj.pointLight == nullptr)
-                continue;
+            auto transformComponent = frameInfo.entityManager.getComponentData<TransformComponent>(entityId);
+            auto pointLightComponent = frameInfo.entityManager.getComponentData<PointLightComponent>(entityId);
 
             assert(lightIndex < MAX_LIGHTS && "Point lights exceed maximum");
 
             // Update
-            obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
-
-            ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.f);
-            ubo.pointLights[lightIndex].color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
+            transformComponent.translation = glm::vec3(rotateLight * glm::vec4(transformComponent.translation, 1.f));
+            frameInfo.entityManager.setComponentData(entityId, transformComponent);
+            ubo.pointLights[lightIndex].position = glm::vec4(transformComponent.translation, 1.f);
+            ubo.pointLights[lightIndex].color = glm::vec4(pointLightComponent.color, pointLightComponent.lightIntensity);
             lightIndex++;
         }
         ubo.numLights = lightIndex;
@@ -110,16 +109,15 @@ namespace engine
             0,
             nullptr);
 
-        for (auto &kv : frameInfo.gameObjects)
+        for (auto &entityId : frameInfo.entityManager.getEntitiesWithComponent(ComponentType::PointLight))
         {
-            auto &obj = kv.second;
-            if (obj.pointLight == nullptr)
-                continue;
+            auto transformComponent = frameInfo.entityManager.getComponentData<TransformComponent>(entityId);
+            auto pointLightComponent = frameInfo.entityManager.getComponentData<PointLightComponent>(entityId);
 
             PointLightPushConstants push{};
-            push.position = glm::vec4(obj.transform.translation, 1.f);
-            push.color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
-            push.radius = obj.transform.scale.x;
+            push.position = glm::vec4(transformComponent.translation, 1.f);
+            push.color = glm::vec4(pointLightComponent.color, pointLightComponent.lightIntensity);
+            push.radius = transformComponent.scale.x;
 
             vkCmdPushConstants(
                 frameInfo.commandBuffer,

@@ -4,9 +4,11 @@
 #include "GameObject.hpp"
 #include "KeyboardMovementController.hpp"
 #include "Descriptors.hpp"
+#include "EntityManager.hpp"
 
 namespace engine {
 
+	static constexpr size_t MAX_ENTITIES = 500;
 	class App {
 	public:
 		static constexpr int WIDTH = 1920;
@@ -29,6 +31,7 @@ namespace engine {
 		Renderer renderer{ m_window, m_device };
 
 		std::unique_ptr<DescriptorPool> globalPool{};
+		EntityManager entityManager = EntityManager(MAX_ENTITIES);
 		GameObject::Map m_gameObjects;
 	};
 } // namespace engine
