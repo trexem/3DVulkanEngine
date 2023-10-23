@@ -63,8 +63,8 @@ namespace engine
             m_device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         Camera camera{};
 
-        auto viewerObject = GameObject::createGameObject();
-        viewerObject.transform.translation.z = -2.5f;
+        TransformComponent viewerObject {};
+        viewerObject.translation.z = -2.5f;
 
         KeyboardMovementController cameraController{};
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -82,7 +82,7 @@ namespace engine
             cameraController.moveInPlaneXZ(
                 current_key_states, frameTime, viewerObject);
             camera.setViewYXZ(
-                viewerObject.transform.translation, viewerObject.transform.rotation);
+                viewerObject.translation, viewerObject.rotation);
 
             float aspect = renderer.getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.f), aspect, .1f, 100.f);
@@ -162,7 +162,7 @@ namespace engine
     void App::loadGameObjects()
     {
         std::shared_ptr<Model> model =
-            Model::createModelFromFile(m_device, "models/flat_vase.obj");
+            Model::createModelFromFile(m_device, "models/tub2.obj");
         
         uint32_t flatVase = entityManager.createEntity();
         
@@ -173,12 +173,12 @@ namespace engine
 
         entityManager.addComponent(flatVase, ComponentType::Transform);
         TransformComponent flatVaseTransform{};
-        flatVaseTransform.translation = {-.5f, .5f, 0.f};
+        flatVaseTransform.translation = {-.75f, .5f, 0.f};
         flatVaseTransform.scale = {3.0f, 1.5, 3.0};
         entityManager.setComponentData(flatVase, flatVaseTransform);
 
          model =
-             Model::createModelFromFile(m_device, "models/smooth_vase.obj");
+             Model::createModelFromFile(m_device, "models/shiptest.obj");
 
         uint32_t smoothVase = entityManager.createEntity();
         
@@ -190,23 +190,23 @@ namespace engine
         entityManager.addComponent(smoothVase, ComponentType::Transform);
         TransformComponent smoothVaseTransform{};
         smoothVaseTransform.translation = {.5f, .5f, .0f};
-        smoothVaseTransform.scale = {3.0f, 1.5, 3.0};
+        smoothVaseTransform.scale = {.02f, .02f, .02f};
         entityManager.setComponentData(smoothVase, smoothVaseTransform);
 
-        model =
-            Model::createModelFromFile(m_device, "models/Quad.obj");
-        uint32_t floor = entityManager.createEntity();
+        // model =
+        //     Model::createModelFromFile(m_device, "models/Quad.obj");
+        // uint32_t floor = entityManager.createEntity();
         
-        entityManager.addComponent(floor, ComponentType::Model);
-        ModelComponent floorModel;
-        floorModel.model = model;
-        entityManager.setComponentData(floor, floorModel);
+        // entityManager.addComponent(floor, ComponentType::Model);
+        // ModelComponent floorModel;
+        // floorModel.model = model;
+        // entityManager.setComponentData(floor, floorModel);
 
-        entityManager.addComponent(floor, ComponentType::Transform);
-        TransformComponent floorTransform{};
-        floorTransform.translation = {0.f, .5f, 0.f};
-        floorTransform.scale = {5.0f, 1.0, 5.0};
-        entityManager.setComponentData(floor, floorTransform);
+        // entityManager.addComponent(floor, ComponentType::Transform);
+        // TransformComponent floorTransform{};
+        // floorTransform.translation = {0.f, .5f, 0.f};
+        // floorTransform.scale = {5.0f, 1.0, 5.0};
+        // entityManager.setComponentData(floor, floorTransform);
 
         std::vector<glm::vec3> lightColors{
             {.8f, 0.f, 0.f},
@@ -227,7 +227,7 @@ namespace engine
             PointLightComponent pointLight{};
             TransformComponent plTComp{};
             pointLight.color = lightColors[i];
-            pointLight.lightIntensity = 3.f;
+            pointLight.lightIntensity = .5f;
             auto rotateLight = glm::rotate(
                 glm::mat4(1.f),
                 (i * glm::two_pi<float>()) / lightColors.size(),

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "GameObject.hpp"
 #include "Window.hpp"
+#include "Components.hpp"
 
 namespace engine {
 
@@ -21,7 +21,7 @@ namespace engine {
 			int lookDown = SDL_SCANCODE_DOWN;
 		};
 
-		void moveInPlaneXZ(const Uint8* t_current_key_states, float dt, GameObject& gameObject);
+		void moveInPlaneXZ(const Uint8* t_current_key_states, float dt, TransformComponent& view);
 
 		KeyMappings keys{};
 		float moveSpeed{ 3.f };

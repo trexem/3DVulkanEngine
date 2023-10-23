@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Renderer.hpp"
-#include "GameObject.hpp"
 #include "KeyboardMovementController.hpp"
 #include "Descriptors.hpp"
 #include "EntityManager.hpp"
@@ -32,6 +31,5 @@ namespace engine {
 
 		std::unique_ptr<DescriptorPool> globalPool{};
 		EntityManager entityManager = EntityManager(MAX_ENTITIES);
-		GameObject::Map m_gameObjects;
 	};
 } // namespace engine

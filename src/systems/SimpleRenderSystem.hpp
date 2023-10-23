@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Pipeline.hpp"
-#include "GameObject.hpp"
 #include "FrameInfo.hpp"
 
 namespace engine {

@@ -2,7 +2,7 @@
 
 namespace engine {
 	void KeyboardMovementController::moveInPlaneXZ(
-		const Uint8* t_current_key_states, float dt, GameObject& gameObject
+		const Uint8* t_current_key_states, float dt, TransformComponent& view
 	) {
 		glm::vec3 rotate{ 0 };
 		if (t_current_key_states[keys.lookRight]) rotate.y += 1.f;
@@ -11,14 +11,14 @@ namespace engine {
 		if (t_current_key_states[keys.lookDown]) rotate.x -= 1.f;
 
 		if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
-			gameObject.transform.rotation += lookSpeed * dt * glm::normalize(rotate);
+			view.rotation += lookSpeed * dt * glm::normalize(rotate);
 		}
-		gameObject.transform.rotation.x = 
-			glm::clamp(gameObject.transform.rotation.x, -1.5f, 1.5f);
-		gameObject.transform.rotation.y =
-			glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
+		view.rotation.x = 
+			glm::clamp(view.rotation.x, -1.5f, 1.5f);
+		view.rotation.y =
+			glm::mod(view.rotation.y, glm::two_pi<float>());
 
-		float yaw = gameObject.transform.rotation.y;
+		float yaw = view.rotation.y;
 		const glm::vec3 forwardDir{ sin(yaw), 0.f, cos(yaw) };
 		const glm::vec3 rightDir{ forwardDir.z, 0.f, -forwardDir.x };
 		const glm::vec3 upDir{ 0.f, -1.f, 0.f };
@@ -35,7 +35,7 @@ namespace engine {
 		if (t_current_key_states[keys.moveDown]) moveDir -= upDir;
 
 		if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()) {
-			gameObject.transform.translation += moveSpeed * dt * glm::normalize(moveDir);
+			view.translation += moveSpeed * dt * glm::normalize(moveDir);
 		}
 	}
 }
