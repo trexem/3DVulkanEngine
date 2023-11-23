@@ -21,9 +21,10 @@ namespace engine
     App::App()
     {
         globalPool = DescriptorPool::Builder(m_device)
-                         .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-                         .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-                         .build();
+                    .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+                    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+                    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
+                    .build();
         loadGameObjects();
     }
 
@@ -44,15 +45,31 @@ namespace engine
         }
 
         auto globalSetLayout = DescriptorSetLayout::Builder(m_device)
-                                   .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                                   .build();
+                                .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                                .build();
 
         std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        std::vector<VkDescriptorImageInfo> imageInfos; 
+        for (const uint32_t entityID : entityManager.getEntitiesWithComponent(ComponentType::Model)) {
+            if (entityManager.entityExists(entityID)) {
+                ModelComponent modelComponent = entityManager.getComponentData<ModelComponent>(entityID);
+                if (modelComponent.model->hasImage()) {
+                    auto textureInfo = modelComponent.model->textureImage()->textureInfo();
+                    VkDescriptorImageInfo imageInfo{};
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            		imageInfo.imageView = textureInfo.imageView;
+            		imageInfo.sampler = textureInfo.sampler;
+                    imageInfos.push_back(imageInfo);
+                }
+            }
+        }
         for (int i = 0; i < globalDescriptorSets.size(); i++)
         {
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
             DescriptorWriter(*globalSetLayout, *globalPool)
                 .writeBuffer(0, &bufferInfo)
+                .writeImage(1,imageInfos.data(), imageInfos.size())
                 .build(globalDescriptorSets[i]);
         }
 
@@ -162,7 +179,8 @@ namespace engine
     void App::loadGameObjects()
     {
         std::shared_ptr<Model> model =
-            Model::createModelFromFile(m_device, "models/tub2.obj");
+            Model::createModelFromFile(m_device, "models/Quad.obj");
+        model->loadTexture("textures/texture.jpg");
         
         uint32_t flatVase = entityManager.createEntity();
         
@@ -177,21 +195,21 @@ namespace engine
         flatVaseTransform.scale = {3.0f, 1.5, 3.0};
         entityManager.setComponentData(flatVase, flatVaseTransform);
 
-         model =
-             Model::createModelFromFile(m_device, "models/shiptest.obj");
+        // model = Model::createModelFromFile(m_device, "models/shiptest.obj");
+        // model->loadTexture("textures/texture.jpg");
 
-        uint32_t smoothVase = entityManager.createEntity();
+        // uint32_t smoothVase = entityManager.createEntity();
         
-        entityManager.addComponent(smoothVase, ComponentType::Model);
-        ModelComponent smoothVaseModel;
-        smoothVaseModel.model = model;
-        entityManager.setComponentData(smoothVase, smoothVaseModel);
+        // entityManager.addComponent(smoothVase, ComponentType::Model);
+        // ModelComponent smoothVaseModel;
+        // smoothVaseModel.model = model;
+        // entityManager.setComponentData(smoothVase, smoothVaseModel);
 
-        entityManager.addComponent(smoothVase, ComponentType::Transform);
-        TransformComponent smoothVaseTransform{};
-        smoothVaseTransform.translation = {.5f, .5f, .0f};
-        smoothVaseTransform.scale = {.02f, .02f, .02f};
-        entityManager.setComponentData(smoothVase, smoothVaseTransform);
+        // entityManager.addComponent(smoothVase, ComponentType::Transform);
+        // TransformComponent smoothVaseTransform{};
+        // smoothVaseTransform.translation = {.5f, .5f, .0f};
+        // smoothVaseTransform.scale = {.02f, .02f, .02f};
+        // entityManager.setComponentData(smoothVase, smoothVaseTransform);
 
         // model =
         //     Model::createModelFromFile(m_device, "models/Quad.obj");
@@ -227,9 +245,9 @@ namespace engine
             PointLightComponent pointLight{};
             TransformComponent plTComp{};
             pointLight.color = lightColors[i];
-            pointLight.lightIntensity = .5f;
+            pointLight.lightIntensity = 5.5f;
             auto rotateLight = glm::rotate(
-                glm::mat4(1.f),
+                glm::mat4(5.f),
                 (i * glm::two_pi<float>()) / lightColors.size(),
                 {0.f, -1.f, 0.f});
             plTComp.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));

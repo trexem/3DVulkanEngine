@@ -1,8 +1,9 @@
 #version 450
 
 layout(location = 0) in vec3 inColor;
-layout(location = 1) in vec3 inPosWorld;
-layout(location = 2) in vec3 inNormalWorld;
+layout(location = 1) out vec2 fragTexCoord;
+layout(location = 2) in vec3 inPosWorld;
+layout(location = 3) in vec3 inNormalWorld;
 
 layout (location = 0) out vec4 outColor;
 
@@ -19,6 +20,8 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     PointLight pointLights[10];
     int numLights;
 } ubo;
+
+layout(set = 0, binding = 1) uniform sampler2D texSampler;
 
 layout(push_constant) uniform Push {
 	mat4 modelMatrix;
@@ -50,6 +53,7 @@ void main() {
 		blinnTerm = pow(blinnTerm, 32.0);
 		specularLight += intensity * blinnTerm;
 	}
+	vec4 texColor = texture(texSampler, fragTexCoord);
 
-	outColor = vec4(diffuseLight * inColor + specularLight * inColor, 1.0);
+	outColor = vec4((diffuseLight + specularLight) * texColor.rgb, 1.0);
 }

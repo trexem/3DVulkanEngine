@@ -6,8 +6,9 @@ layout(location = 2) in vec3 normal;
 layout(location = 3) in vec2 uv;
 
 layout(location = 0) out vec3 outColor;
-layout(location = 1) out vec3 outPosWorld;
-layout(location = 2) out vec3 outNormalWorld;
+layout(location = 1) out vec2 fragTexCoord;
+layout(location = 2) out vec3 outPosWorld;
+layout(location = 3) out vec3 outNormalWorld;
 
 struct PointLight {
     vec4 position;
@@ -23,6 +24,8 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     int numLights;
 } ubo;
 
+layout(set = 0, binding = 1) uniform sampler2D texSampler;
+
 layout(push_constant) uniform Push {
 	mat4 modelMatrix;
 	mat4 normalMatrix;
@@ -34,5 +37,7 @@ void main() {
 	gl_Position = ubo.projection * ubo.view * positionWorld;
 	outPosWorld = positionWorld.xyz;
 	outColor = inColor;
+	fragTexCoord = uv;
+	
 	outNormalWorld = normalize(mat3(push.normalMatrix) * normal);
 }

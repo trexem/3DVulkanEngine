@@ -63,6 +63,14 @@ namespace engine {
 	Model::Model(Device& device, const Model::Builder& builder) : m_device{ device } {
 		createVertexBuffers(builder.vertices);
 		createIndexBuffers(builder.indices);
+
+		textureDescriptorSetLayout = DescriptorSetLayout::Builder(m_device)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.build();
+
+		textureDescriptorPool = DescriptorPool::Builder(m_device)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1) // Specify the number of textures you'll use
+			.build();
 	}
 
 	Model::~Model() {}
@@ -161,6 +169,21 @@ namespace engine {
 		}
 	}
 
+	// void Model::drawTexture(VkDescriptorSet set, DescriptorSetLayout& setLayout, DescriptorPool& pool) {
+	// 	//if (!textureRendered) {
+	// 		VkDescriptorImageInfo imageInfo{};
+	// 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	// 		imageInfo.imageView = m_textureImage->imageView();
+	// 		imageInfo.sampler = m_textureImage->sampler();
+
+	// 		DescriptorWriter(setLayout, pool)
+	// 			.writeImage(1, &imageInfo)
+	// 			.build(set);
+			
+	// 		textureRendered = true;
+	// 	//}
+	// }
+
 	void Model::Builder::loadModel(const std::string& filepath) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -214,5 +237,10 @@ namespace engine {
 				indices.push_back(uniqueVertices[vertex]);
 			}
 		}
+	}
+
+	void Model::loadTexture(const std::string& filepath) {
+		m_textureImage = std::make_unique<Image>(m_device, filepath);
+		
 	}
 } // namespace engine

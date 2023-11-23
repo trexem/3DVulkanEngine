@@ -35,7 +35,7 @@ endif()
  
 # 2. Set SDL2_PATH in .env.cmake to target specific sdl2
 if (DEFINED SDL2_PATH)
-  message(STATUS "Using GLFW path specified in .env")
+  message(STATUS "Using SDL2 path specified in .env")
   set(SDL2_INCLUDE_DIRS "${SDL2_PATH}/include")
   set(SDL2_LIB "${SDL2_PATH}/lib/x64")
 else()
@@ -48,6 +48,22 @@ if (NOT SDL2_LIB)
 else()
     message(STATUS "Using sdl2 lib at: ${SDL2_LIB}")
 endif()
+
+# 3. Set SDL2_IMAGE_PATH in .env.cmake to target specific sdl2
+if (DEFINED SDL2_IMAGE_PATH)
+  message(STATUS "Using SDL2_IMAGE path specified in .env")
+  set(SDL2_IMAGE_INCLUDE_DIRS "${SDL2_IMAGE_PATH}/include")
+  set(SDL2_IMAGE_LIB "${SDL2_IMAGE_PATH}/lib/x64")
+else()
+  find_package(sdl2_image 2.0.5 REQUIRED)
+  set(SDL2_IMAGE_LIB sdl2)
+  message(STATUS "Found SDL2_image")
+endif()
+if (NOT SDL2_IMAGE_LIB)
+    message(FATAL_ERROR "Could not find sdl2_image library!")
+else()
+    message(STATUS "Using sdl2_image lib at: ${SDL2_IMAGE_LIB}")
+endif()
  
 include_directories(external)
  
@@ -56,12 +72,19 @@ if (NOT TINYOBJ_PATH)
   message(STATUS "TINYOBJ_PATH not specified in .env.cmake, using external/tinyobjloader")
   set(TINYOBJ_PATH external/tinyobjloader)
 endif()
+
+# If STB_IMAGE not specified in .env.cmake, try fetching from git repo
+if (NOT STB_IMAGE)
+  message(STATUS "STB_IMAGE not specified in .env.cmake, using external/stb_image")
+  set(STB_IMAGE external/stbimage)
+endif()
  
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
  
 add_executable(${PROJECT_NAME} ${SOURCES})
  
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_compile_options(${PROJECT_NAME} PRIVATE -g -O0)
  
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build")
  
@@ -81,7 +104,9 @@ if (WIN32)
     ${PROJECT_SOURCE_DIR}/src
     ${Vulkan_INCLUDE_DIRS}
     ${TINYOBJ_PATH}
+    ${STB_IMAGE}
     ${SDL2_INCLUDE_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
     ${GLM_PATH}
     )
  

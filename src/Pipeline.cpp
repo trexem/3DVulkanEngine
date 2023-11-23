@@ -214,4 +214,4 @@ namespace engine {
 		configInfo.bindingDescriptions = Model::Vertex::getBindingDescriptions();
 		configInfo.attributeDescriptions = Model::Vertex::getAttributeDescriptions();
 	}
-}
+} //namespace engine

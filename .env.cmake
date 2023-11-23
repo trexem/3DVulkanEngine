@@ -1,4 +1,5 @@
 set(SDL2_PATH E:/Libraries/SDL2-2.0.22)
+set(SDL2_IMAGE_PATH E:/Libraries/SDL2_image-2.0.5)
 set(GLM_PATH C:/VulkanSDK/1.3.261.1/Include/glm)
 set(VULKAN_SDK_PATH  C:/VulkanSDK/1.3.261.1)
  
@@ -7,3 +8,4 @@ set(VULKAN_SDK_PATH  C:/VulkanSDK/1.3.261.1)
  
 # Optional set TINYOBJ_PATH to target specific version, otherwise defaults to external/tinyobjloader
 set(TINYOBJ_PATH E:/Libraries/tinyobjloader)
+set(STB_IMAGE E:/Libraries/stbimage)

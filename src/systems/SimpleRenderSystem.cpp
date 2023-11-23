@@ -74,7 +74,7 @@ namespace engine {
             0,
             1,
             &frameInfo.globalDescriptorSet,
-            0, 
+            0,
             nullptr
         );
 

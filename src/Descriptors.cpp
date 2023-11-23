@@ -157,7 +157,7 @@ namespace engine {
     }
 
     DescriptorWriter& DescriptorWriter::writeImage(
-        uint32_t binding, VkDescriptorImageInfo* imageInfo) {
+        uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count = 1) {
         assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
         auto& bindingDescription = setLayout.bindings[binding];
@@ -171,7 +171,7 @@ namespace engine {
         write.descriptorType = bindingDescription.descriptorType;
         write.dstBinding = binding;
         write.pImageInfo = imageInfo;
-        write.descriptorCount = 1;
+        write.descriptorCount = count;
 
         writes.push_back(write);
         return *this;
@@ -179,6 +179,7 @@ namespace engine {
 
     bool DescriptorWriter::build(VkDescriptorSet& set) {
         bool success = pool.allocateDescriptor(setLayout.getDescriptorSetLayout(), set);
+        assert(success && "Failed to allocate descriptorSetLayout");
         if (!success) {
             return false;
         }
