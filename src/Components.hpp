@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.hpp"
+#include "Image.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -11,6 +12,7 @@ namespace engine {
         Physics,
         PointLight,
         Model,
+        Image,
         // Add more component types as needed
 
         Count
@@ -86,4 +88,10 @@ namespace engine {
         std::shared_ptr<Model> model;
         glm::vec3 color{};
     };
+
+    struct ImageComponent {
+        VkDescriptorSet* pDescriptorSet;
+        std::vector<TextureInfo> textureInfo;
+    };
+    
 } //namepsace engine

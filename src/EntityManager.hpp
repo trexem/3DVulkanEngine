@@ -50,8 +50,6 @@ namespace engine {
                 }
             }
             // Handle the case where the component data does not exist.
-            std::cout << "EntityID: " << entityID << " type: " << static_cast<size_t>(type) << std::endl;
-            std::cout << entityComponentMasks[entityID] << std::endl;
             throw std::runtime_error("Component data does not exist for the specified entity.");
         }
 
@@ -68,6 +66,8 @@ namespace engine {
                     return ComponentType::Model;
                 } else if constexpr (std::is_same<T, PointLightComponent>::value) {
                     return ComponentType::PointLight;
+                } else if constexpr (std::is_same<T, ImageComponent>::value) {
+                    return ComponentType::Image;
                 }
             }
 

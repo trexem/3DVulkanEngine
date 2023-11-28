@@ -28,8 +28,10 @@ namespace engine {
 		Window m_window{ WIDTH, HEIGHT, "Hello Vulkan!" };
 		Device m_device{ m_window };
 		Renderer renderer{ m_window, m_device };
+		std::vector<std::shared_ptr<Image>> images;
 
 		std::unique_ptr<DescriptorPool> globalPool{};
+		std::unique_ptr<DescriptorPool> texturePool{};
 		EntityManager entityManager = EntityManager(MAX_ENTITIES);
 	};
 } // namespace engine

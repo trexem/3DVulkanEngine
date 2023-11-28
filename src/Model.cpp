@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cstring>
 #include <unordered_map>
+#include <iostream>
 
 #ifndef ENGINE_DIR
 #define ENGINE_DIR "../"
@@ -169,21 +170,6 @@ namespace engine {
 		}
 	}
 
-	// void Model::drawTexture(VkDescriptorSet set, DescriptorSetLayout& setLayout, DescriptorPool& pool) {
-	// 	//if (!textureRendered) {
-	// 		VkDescriptorImageInfo imageInfo{};
-	// 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	// 		imageInfo.imageView = m_textureImage->imageView();
-	// 		imageInfo.sampler = m_textureImage->sampler();
-
-	// 		DescriptorWriter(setLayout, pool)
-	// 			.writeImage(1, &imageInfo)
-	// 			.build(set);
-			
-	// 		textureRendered = true;
-	// 	//}
-	// }
-
 	void Model::Builder::loadModel(const std::string& filepath) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -222,13 +208,13 @@ namespace engine {
 						attrib.normals[3 * index.normal_index + 2]
 					};
 				}
+
 				if (index.texcoord_index >= 0) {
 					vertex.uv = {
 						attrib.texcoords[2 * index.texcoord_index + 0],
 						attrib.texcoords[2 * index.texcoord_index + 1]
 					};
 				}
-
 
 				if (uniqueVertices.count(vertex) == 0) {
 					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());

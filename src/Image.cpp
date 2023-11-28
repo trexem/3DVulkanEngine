@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include <iostream>
 #ifndef ENGINE_DIR
 #define ENGINE_DIR "../"
 #endif // !ENGINE_DIR
@@ -13,6 +14,7 @@ namespace engine {
         createTextureImage(filePath);
         createTextureImageView();
         createTextureSampler();
+        createTextureInfo();
     }
 
     Image::~Image() {
@@ -177,6 +179,12 @@ namespace engine {
         if (vkCreateSampler(m_device.device(), &samplerInfo, nullptr, &m_textureInfo.sampler) != VK_SUCCESS) {
             throw std::runtime_error("failed to create texture sampler!");
         }
+    }
+
+    void Image::createTextureInfo() {
+        m_textureInfo.descriptorInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        m_textureInfo.descriptorInfo.imageView = m_textureInfo.imageView;
+        m_textureInfo.descriptorInfo.sampler = m_textureInfo.sampler;
     }
 
 }  // namespace engine

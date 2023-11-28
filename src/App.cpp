@@ -23,9 +23,15 @@ namespace engine
         globalPool = DescriptorPool::Builder(m_device)
                     .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
                     .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-                    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
                     .build();
         loadGameObjects();
+        texturePool = DescriptorPool::Builder(m_device)
+                    .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+                    .addPoolSize(
+                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
+                        entityManager.getEntitiesWithComponent(ComponentType::Image).size())
+                    .build();
+
     }
 
     App::~App() {}
@@ -46,35 +52,46 @@ namespace engine
 
         auto globalSetLayout = DescriptorSetLayout::Builder(m_device)
                                 .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                                .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
                                 .build();
-
         std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
-        std::vector<VkDescriptorImageInfo> imageInfos; 
-        for (const uint32_t entityID : entityManager.getEntitiesWithComponent(ComponentType::Model)) {
-            if (entityManager.entityExists(entityID)) {
-                ModelComponent modelComponent = entityManager.getComponentData<ModelComponent>(entityID);
-                if (modelComponent.model->hasImage()) {
-                    auto textureInfo = modelComponent.model->textureImage()->textureInfo();
-                    VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            		imageInfo.imageView = textureInfo.imageView;
-            		imageInfo.sampler = textureInfo.sampler;
-                    imageInfos.push_back(imageInfo);
-                }
-            }
-        }
         for (int i = 0; i < globalDescriptorSets.size(); i++)
         {
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
             DescriptorWriter(*globalSetLayout, *globalPool)
                 .writeBuffer(0, &bufferInfo)
-                .writeImage(1,imageInfos.data(), imageInfos.size())
                 .build(globalDescriptorSets[i]);
         }
 
+        auto textureSetLayout = DescriptorSetLayout::Builder(m_device)
+                                .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                                .build();
+
+        
+        std::vector<VkDescriptorSet> globalTextureDescriptorSets(entityManager.getEntitiesWithComponent(ComponentType::Image).size());
+        int textureIterator = 0;
+        for (const uint32_t entityID : entityManager.getEntitiesWithComponent(ComponentType::Image)) {
+        std::vector<VkDescriptorImageInfo> imageInfos; 
+            if (entityManager.entityExists(entityID)) {
+                ImageComponent imageComponent = entityManager.getComponentData<ImageComponent>(entityID);
+                for (const auto& texInfo : imageComponent.textureInfo) {
+                    if (texInfo.imageView == VK_NULL_HANDLE || texInfo.descriptorInfo.imageView == VK_NULL_HANDLE)  {
+                        throw std::runtime_error("Invalid VkImageView handle in TextureInfo!");
+                    }
+                    imageInfos.emplace_back(texInfo.descriptorInfo);
+                }
+                DescriptorWriter(*textureSetLayout, *texturePool)
+                    .writeImage(0,imageInfos.data(), imageInfos.size())
+                    .build(globalTextureDescriptorSets.at(textureIterator));
+
+                imageComponent.pDescriptorSet = &globalTextureDescriptorSets.at(textureIterator);
+                entityManager.setComponentData<ImageComponent>(entityID, imageComponent);
+            }
+            textureIterator++;
+        }
+
         SimpleRenderSystem simpleRenderSystem{
-            m_device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+            m_device, renderer.getSwapChainRenderPass(), 
+            globalSetLayout->getDescriptorSetLayout(), textureSetLayout->getDescriptorSetLayout()};
 
         PointLightSystem pointLightSysyem{
             m_device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
@@ -178,16 +195,23 @@ namespace engine
 
     void App::loadGameObjects()
     {
+        uint32_t flatVase = entityManager.createEntity();
         std::shared_ptr<Model> model =
             Model::createModelFromFile(m_device, "models/Quad.obj");
-        model->loadTexture("textures/texture.jpg");
         
-        uint32_t flatVase = entityManager.createEntity();
         
         entityManager.addComponent(flatVase, ComponentType::Model);
         ModelComponent flatVaseModel;
         flatVaseModel.model = model;
         entityManager.setComponentData(flatVase, flatVaseModel);
+        
+        std::shared_ptr<Image> image = std::make_shared<Image>(m_device, "textures/texture.jpg");
+        ImageComponent flatVaseTexture;
+        flatVaseTexture.textureInfo.push_back(image->textureInfo());
+        entityManager.addComponent(flatVase, ComponentType::Image);
+        entityManager.setComponentData(flatVase, flatVaseTexture);
+
+        images.push_back(image);
 
         entityManager.addComponent(flatVase, ComponentType::Transform);
         TransformComponent flatVaseTransform{};

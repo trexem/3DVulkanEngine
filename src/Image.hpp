@@ -7,18 +7,13 @@ namespace engine {
     struct TextureInfo{
         VkImageView imageView;
         VkSampler sampler;
+        VkDescriptorImageInfo descriptorInfo;
     };
 
     class Image {
     public:
         Image(Device& device, const std::string& filePath);
         ~Image();
-
-        // Not copyable or movable
-        Image(const Image&) = delete;
-        Image& operator=(const Image&) = delete;
-        Image(Image&&) = delete;
-        Image& operator=(Image&&) = delete;
 
         void createTextureImage(const std::string& filePath);
 
@@ -37,6 +32,7 @@ namespace engine {
         void createTextureImageView();
         void transitionImageLayout(VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
         void createTextureSampler();
+        void createTextureInfo();
 
         Device& m_device;
         VkImage m_image;

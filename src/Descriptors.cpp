@@ -157,7 +157,7 @@ namespace engine {
     }
 
     DescriptorWriter& DescriptorWriter::writeImage(
-        uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count = 1) {
+        uint32_t binding, VkDescriptorImageInfo* imageInfo, uint32_t count) {
         assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
         auto& bindingDescription = setLayout.bindings[binding];
