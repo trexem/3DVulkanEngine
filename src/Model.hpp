@@ -37,7 +37,6 @@ namespace engine {
 			void loadModel(const std::string& filepath);
 		};
 
-		void loadTexture(const std::string& filepath);
 		bool hasImage() { return m_textureImage != nullptr; }
 		Image* textureImage() { return m_textureImage.get(); }
 

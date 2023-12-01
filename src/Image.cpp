@@ -10,7 +10,8 @@
 
 namespace engine {
 
-    Image::Image(Device& device, const std::string& filePath) : m_device(device) {
+    Image::Image(Device& device, const std::string& filePath, uint16_t textureIndex) : m_device(device) {
+        m_textureInfo.textureIndex = textureIndex;
         createTextureImage(filePath);
         createTextureImageView();
         createTextureSampler();

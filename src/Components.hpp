@@ -90,8 +90,9 @@ namespace engine {
     };
 
     struct ImageComponent {
-        VkDescriptorSet* pDescriptorSet;
+        std::vector<VkDescriptorSet*> pDescriptorSet;
         std::vector<TextureInfo> textureInfo;
+        std::vector<uint16_t> textureBufferIndex;
     };
     
 } //namepsace engine

@@ -22,6 +22,9 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 } ubo;
 
 layout(set = 1, binding = 0) uniform sampler2D texSampler;
+layout(set = 1, binding = 1) uniform TextureUbo {
+	int texIndex;
+} textureUbo;
 
 layout(push_constant) uniform Push {
 	mat4 modelMatrix;
@@ -53,7 +56,17 @@ void main() {
 		blinnTerm = pow(blinnTerm, 32.0);
 		specularLight += intensity * blinnTerm;
 	}
-	vec4 texColor = texture(texSampler, fragTexCoord);
+    vec4 texColor = texture(texSampler, fragTexCoord);
 
-	outColor = vec4((diffuseLight + specularLight) * texColor.rgb, 1.0);
+	if (textureUbo.texIndex == 0) {
+        outColor = vec4((diffuseLight + specularLight) * texColor.rgb, 1.0);
+    } else if (textureUbo.texIndex == 1) {
+		if(fragTexCoord.x > 0.5) {
+			discard;
+		} else {
+			outColor = vec4((diffuseLight + specularLight) * texColor.rgb, 1.0);
+		}
+    } else {
+        outColor = vec4((diffuseLight + specularLight) * texColor.rgb, 1.0);
+    }
 }

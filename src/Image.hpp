@@ -8,11 +8,12 @@ namespace engine {
         VkImageView imageView;
         VkSampler sampler;
         VkDescriptorImageInfo descriptorInfo;
+        uint16_t textureIndex;
     };
 
     class Image {
     public:
-        Image(Device& device, const std::string& filePath);
+        Image(Device& device, const std::string& filePath, uint16_t textureIndex = 1);
         ~Image();
 
         void createTextureImage(const std::string& filePath);

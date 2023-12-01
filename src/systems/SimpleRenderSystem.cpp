@@ -100,19 +100,26 @@ namespace engine {
                     sizeof(SimplePushConstantData),
                     &push
                 );
-
-                vkCmdBindDescriptorSets(
-                    frameInfo.commandBuffer,
-                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    m_pipelineLayout,
-                    1,
-                    1,
-                    imageComponent.pDescriptorSet,
-                    0,
-                    nullptr
-                );
-                modelComponent.model->bind(frameInfo.commandBuffer);
-                modelComponent.model->draw(frameInfo.commandBuffer);
+                int i = 0;
+                for (const auto descriptor : imageComponent.pDescriptorSet) {
+                    TextureData tex{};
+                    tex.textureIndex = imageComponent.textureInfo.at(i).textureIndex;
+                    frameInfo.textureBuffers[imageComponent.textureBufferIndex.at(i)]->writeToBuffer(&tex);
+                    frameInfo.textureBuffers[imageComponent.textureBufferIndex.at(i)]->flush();
+                    vkCmdBindDescriptorSets(
+                        frameInfo.commandBuffer,
+                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        m_pipelineLayout,
+                        1,
+                        1,
+                        descriptor,
+                        0,
+                        nullptr
+                    );
+                    modelComponent.model->bind(frameInfo.commandBuffer);
+                    modelComponent.model->draw(frameInfo.commandBuffer);
+                    i++;
+                }
             }
         }
     }

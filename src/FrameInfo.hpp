@@ -22,6 +22,10 @@ namespace engine {
 		int numLights;
     };
 
+	struct TextureData {
+		int textureIndex;
+	};
+
 	struct FrameInfo {
 		int frameIndex;
 		float frameTime;
@@ -29,5 +33,6 @@ namespace engine {
 		Camera& camera;
 		VkDescriptorSet globalDescriptorSet;
 		EntityManager& entityManager;
+		std::vector<std::shared_ptr<Buffer>> textureBuffers;
 	};
 } //namespace engine

@@ -27,9 +27,8 @@ namespace engine
         loadGameObjects();
         texturePool = DescriptorPool::Builder(m_device)
                     .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
-                    .addPoolSize(
-                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-                        entityManager.getEntitiesWithComponent(ComponentType::Image).size())
+                    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, images.size())
+                    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, images.size())
                     .build();
 
     }
@@ -61,32 +60,46 @@ namespace engine
                 .writeBuffer(0, &bufferInfo)
                 .build(globalDescriptorSets[i]);
         }
+        
+        uint16_t textureNum = images.size();
+        std::vector<std::shared_ptr<Buffer>> textureBuffers(textureNum);
+        for (int i = 0; i < textureBuffers.size(); i++) {
+            textureBuffers[i] = std::make_shared<Buffer>(
+                m_device,
+                sizeof(TextureData),
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            textureBuffers[i]->map();
+        }
 
         auto textureSetLayout = DescriptorSetLayout::Builder(m_device)
-                                .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                                .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                                .addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                                 .build();
 
         
-        std::vector<VkDescriptorSet> globalTextureDescriptorSets(entityManager.getEntitiesWithComponent(ComponentType::Image).size());
+        std::vector<VkDescriptorSet> globalTextureDescriptorSets(images.size());
         int textureIterator = 0;
         for (const uint32_t entityID : entityManager.getEntitiesWithComponent(ComponentType::Image)) {
-        std::vector<VkDescriptorImageInfo> imageInfos; 
             if (entityManager.entityExists(entityID)) {
                 ImageComponent imageComponent = entityManager.getComponentData<ImageComponent>(entityID);
-                for (const auto& texInfo : imageComponent.textureInfo) {
+                for (auto& texInfo : imageComponent.textureInfo) {
                     if (texInfo.imageView == VK_NULL_HANDLE || texInfo.descriptorInfo.imageView == VK_NULL_HANDLE)  {
                         throw std::runtime_error("Invalid VkImageView handle in TextureInfo!");
                     }
-                    imageInfos.emplace_back(texInfo.descriptorInfo);
-                }
-                DescriptorWriter(*textureSetLayout, *texturePool)
-                    .writeImage(0,imageInfos.data(), imageInfos.size())
-                    .build(globalTextureDescriptorSets.at(textureIterator));
+                    auto bufferInfo = textureBuffers[textureIterator]->descriptorInfo();
+                    DescriptorWriter(*textureSetLayout, *texturePool)
+                        .writeImage(0,&texInfo.descriptorInfo)
+                        .writeBuffer(1,&bufferInfo)
+                        .build(globalTextureDescriptorSets.at(textureIterator));
 
-                imageComponent.pDescriptorSet = &globalTextureDescriptorSets.at(textureIterator);
+                    imageComponent.pDescriptorSet.emplace_back(&globalTextureDescriptorSets.at(textureIterator));
+                    imageComponent.textureBufferIndex.emplace_back(textureIterator);
+                    textureIterator++;
+                }
                 entityManager.setComponentData<ImageComponent>(entityID, imageComponent);
             }
-            textureIterator++;
         }
 
         SimpleRenderSystem simpleRenderSystem{
@@ -129,7 +142,9 @@ namespace engine
                     commandBuffer,
                     camera,
                     globalDescriptorSets[frameIndex],
-                    entityManager};
+                    entityManager,
+                    textureBuffers};
+                
                 // update
                 GlobalUbo ubo{};
                 ubo.projection = camera.getProjection();
@@ -197,7 +212,7 @@ namespace engine
     {
         uint32_t flatVase = entityManager.createEntity();
         std::shared_ptr<Model> model =
-            Model::createModelFromFile(m_device, "models/Quad.obj");
+            Model::createModelFromFile(m_device, "models/cube.obj");
         
         
         entityManager.addComponent(flatVase, ComponentType::Model);
@@ -205,18 +220,23 @@ namespace engine
         flatVaseModel.model = model;
         entityManager.setComponentData(flatVase, flatVaseModel);
         
-        std::shared_ptr<Image> image = std::make_shared<Image>(m_device, "textures/texture.jpg");
+        std::shared_ptr<Image> image = std::make_shared<Image>(m_device, "textures/texture.jpg", 0);
         ImageComponent flatVaseTexture;
+
+        images.push_back(image);
+
+        std::shared_ptr<Image> bridg4 = std::make_shared<Image>(m_device, "textures/bridge4.jpg", 1);
+        flatVaseTexture.textureInfo.push_back(bridg4->textureInfo());
         flatVaseTexture.textureInfo.push_back(image->textureInfo());
         entityManager.addComponent(flatVase, ComponentType::Image);
         entityManager.setComponentData(flatVase, flatVaseTexture);
 
-        images.push_back(image);
+        images.push_back(bridg4);
 
         entityManager.addComponent(flatVase, ComponentType::Transform);
         TransformComponent flatVaseTransform{};
         flatVaseTransform.translation = {-.75f, .5f, 0.f};
-        flatVaseTransform.scale = {3.0f, 1.5, 3.0};
+        flatVaseTransform.scale = {1.0f, 1.0f, 1.0f};
         entityManager.setComponentData(flatVase, flatVaseTransform);
 
         // model = Model::createModelFromFile(m_device, "models/shiptest.obj");

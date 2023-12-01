@@ -25,6 +25,9 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 } ubo;
 
 layout(set = 1, binding = 0) uniform sampler2D texSampler;
+layout(set = 1, binding = 1) uniform TextureUbo {
+	int texIndex;
+} textureUbo;
 
 layout(push_constant) uniform Push {
 	mat4 modelMatrix;

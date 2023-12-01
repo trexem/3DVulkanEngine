@@ -224,9 +224,4 @@ namespace engine {
 			}
 		}
 	}
-
-	void Model::loadTexture(const std::string& filepath) {
-		m_textureImage = std::make_unique<Image>(m_device, filepath);
-		
-	}
 } // namespace engine
