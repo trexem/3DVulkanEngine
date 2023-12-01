@@ -23,7 +23,7 @@ namespace engine
     PointLightSystem::PointLightSystem(
         Device &device,
         VkRenderPass renderPass,
-        VkDescriptorSetLayout globalSetLayout) : m_device{device}
+        VkDescriptorSetLayout globalSetLayout) : m_device{ device }
     {
         createPipelineLayout(globalSetLayout);
         createPipeline(renderPass);

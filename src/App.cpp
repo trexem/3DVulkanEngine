@@ -3,6 +3,7 @@
 #include "systems/SimpleRenderSystem.hpp"
 #include "KeyboardMovementController.hpp"
 #include "systems/PointLightSystem.hpp"
+#include "systems/PhysicsSystem.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -108,6 +109,8 @@ namespace engine
 
         PointLightSystem pointLightSysyem{
             m_device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+
+        PhysicsSystem physicsSystem;
         Camera camera{};
 
         TransformComponent viewerObject {};
@@ -151,6 +154,7 @@ namespace engine
                 ubo.view = camera.getView();
                 ubo.inverseView = camera.getInverseView();
                 pointLightSysyem.update(frameInfo, ubo);
+                physicsSystem.update(frameInfo);
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
@@ -219,41 +223,37 @@ namespace engine
         ModelComponent flatVaseModel;
         flatVaseModel.model = model;
         entityManager.setComponentData(flatVase, flatVaseModel);
-        
         std::shared_ptr<Image> image = std::make_shared<Image>(m_device, "textures/texture.jpg", 0);
         ImageComponent flatVaseTexture;
-
         images.push_back(image);
-
         std::shared_ptr<Image> bridg4 = std::make_shared<Image>(m_device, "textures/bridge4.jpg", 1);
         flatVaseTexture.textureInfo.push_back(bridg4->textureInfo());
         flatVaseTexture.textureInfo.push_back(image->textureInfo());
         entityManager.addComponent(flatVase, ComponentType::Image);
         entityManager.setComponentData(flatVase, flatVaseTexture);
-
         images.push_back(bridg4);
-
         entityManager.addComponent(flatVase, ComponentType::Transform);
         TransformComponent flatVaseTransform{};
         flatVaseTransform.translation = {-.75f, .5f, 0.f};
         flatVaseTransform.scale = {1.0f, 1.0f, 1.0f};
         entityManager.setComponentData(flatVase, flatVaseTransform);
 
-        // model = Model::createModelFromFile(m_device, "models/shiptest.obj");
-        // model->loadTexture("textures/texture.jpg");
-
-        // uint32_t smoothVase = entityManager.createEntity();
-        
-        // entityManager.addComponent(smoothVase, ComponentType::Model);
-        // ModelComponent smoothVaseModel;
-        // smoothVaseModel.model = model;
-        // entityManager.setComponentData(smoothVase, smoothVaseModel);
-
-        // entityManager.addComponent(smoothVase, ComponentType::Transform);
-        // TransformComponent smoothVaseTransform{};
-        // smoothVaseTransform.translation = {.5f, .5f, .0f};
-        // smoothVaseTransform.scale = {.02f, .02f, .02f};
-        // entityManager.setComponentData(smoothVase, smoothVaseTransform);
+        model = Model::createModelFromFile(m_device, "models/shiptest.obj");
+        uint32_t smoothVase = entityManager.createEntity();
+        entityManager.addComponent(smoothVase, ComponentType::Model);
+        ModelComponent smoothVaseModel;
+        smoothVaseModel.model = model;
+        entityManager.setComponentData(smoothVase, smoothVaseModel);
+        entityManager.addComponent(smoothVase, ComponentType::Transform);
+        TransformComponent smoothVaseTransform{};
+        smoothVaseTransform.translation = {.5f, .5f, .0f};
+        smoothVaseTransform.scale = {.02f, .02f, .02f};
+        entityManager.addComponent(smoothVase, ComponentType::Physics);
+        PhysicsComponent physComp{};
+        physComp.velocity = {.0f, 0.0f, 0.0f};
+        physComp.acceleration = {.0f, .0f, -.05f };
+        entityManager.setComponentData(smoothVase, physComp);
+        entityManager.setComponentData(smoothVase, smoothVaseTransform);
 
         // model =
         //     Model::createModelFromFile(m_device, "models/Quad.obj");

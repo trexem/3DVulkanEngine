@@ -18,7 +18,7 @@ namespace engine {
 		const std::string& vertFilepath,
 		const std::string& fragFilepath,
 		const PipelineConfigInfo& configInfo
-	) : m_device(device) {
+	) : m_device{ device } {
 		createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
 	}
 

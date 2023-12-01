@@ -6,6 +6,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace engine {
+    const float GRAVITY = 9.81;
+
     enum class ComponentType {
         Transform,
         Render,
@@ -94,5 +96,15 @@ namespace engine {
         std::vector<TextureInfo> textureInfo;
         std::vector<uint16_t> textureBufferIndex;
     };
+
+    struct PhysicsComponent {
+        glm::vec3 velocity{ 0.0f, 0.0f, 0.0f };
+        glm::vec3 acceleration{ 0.0f, 0.0f, 0.0f };
+        bool hasGravity{ true };
+        float gravity { GRAVITY };
+        float mass{ 1.0f };
+    };
+
+    
     
 } //namepsace engine

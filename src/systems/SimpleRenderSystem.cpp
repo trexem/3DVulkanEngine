@@ -23,8 +23,7 @@ namespace engine {
         VkRenderPass renderPass,
         VkDescriptorSetLayout globalSetLayout,
         VkDescriptorSetLayout textureSetLayout
-    ) :
-        m_device{ device } {
+    ) : m_device{ device } {
         createPipelineLayout(globalSetLayout, textureSetLayout);
         createPipeline(renderPass);
     }
@@ -84,13 +83,14 @@ namespace engine {
 
         for (const uint32_t entityID : frameInfo.entityManager.getEntitiesWithComponent(ComponentType::Model)) {
             if (frameInfo.entityManager.entityExists(entityID)) {
-                ModelComponent modelComponent = frameInfo.entityManager.getComponentData<ModelComponent>(entityID);
-                ImageComponent imageComponent = frameInfo.entityManager.getComponentData<ImageComponent>(entityID);
-                TransformComponent tranformComponent = frameInfo.entityManager.getComponentData<TransformComponent>(entityID);
+                ModelComponent modelComponent = 
+                    frameInfo.entityManager.getComponentData<ModelComponent>(entityID);
+                TransformComponent transformComponent = 
+                    frameInfo.entityManager.getComponentData<TransformComponent>(entityID);
 
                 SimplePushConstantData push{};
-                push.modelMatrix = tranformComponent.mat4();
-                push.normalMatrix = tranformComponent.normalMatrix();
+                push.modelMatrix = transformComponent.mat4();
+                push.normalMatrix = transformComponent.normalMatrix();
 
                 vkCmdPushConstants(
                     frameInfo.commandBuffer,
@@ -100,25 +100,32 @@ namespace engine {
                     sizeof(SimplePushConstantData),
                     &push
                 );
-                int i = 0;
-                for (const auto descriptor : imageComponent.pDescriptorSet) {
-                    TextureData tex{};
-                    tex.textureIndex = imageComponent.textureInfo.at(i).textureIndex;
-                    frameInfo.textureBuffers[imageComponent.textureBufferIndex.at(i)]->writeToBuffer(&tex);
-                    frameInfo.textureBuffers[imageComponent.textureBufferIndex.at(i)]->flush();
-                    vkCmdBindDescriptorSets(
-                        frameInfo.commandBuffer,
-                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                        m_pipelineLayout,
-                        1,
-                        1,
-                        descriptor,
-                        0,
-                        nullptr
-                    );
+                if (frameInfo.entityManager.hasComponent<ImageComponent>(entityID)){
+                    int i = 0;
+                    ImageComponent imageComponent = 
+                    frameInfo.entityManager.getComponentData<ImageComponent>(entityID);
+                    for (const auto descriptor : imageComponent.pDescriptorSet) {
+                        TextureData tex{};
+                        tex.textureIndex = imageComponent.textureInfo.at(i).textureIndex;
+                        frameInfo.textureBuffers[imageComponent.textureBufferIndex.at(i)]->writeToBuffer(&tex);
+                        frameInfo.textureBuffers[imageComponent.textureBufferIndex.at(i)]->flush();
+                        vkCmdBindDescriptorSets(
+                            frameInfo.commandBuffer,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m_pipelineLayout,
+                            1,
+                            1,
+                            descriptor,
+                            0,
+                            nullptr
+                        );
+                        modelComponent.model->bind(frameInfo.commandBuffer);
+                        modelComponent.model->draw(frameInfo.commandBuffer);
+                        i++;
+                    }
+                } else {
                     modelComponent.model->bind(frameInfo.commandBuffer);
                     modelComponent.model->draw(frameInfo.commandBuffer);
-                    i++;
                 }
             }
         }
