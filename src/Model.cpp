@@ -64,14 +64,10 @@ namespace engine {
 	Model::Model(Device& device, const Model::Builder& builder) : m_device{ device } {
 		createVertexBuffers(builder.vertices);
 		createIndexBuffers(builder.indices);
-
-		textureDescriptorSetLayout = DescriptorSetLayout::Builder(m_device)
-			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-			.build();
-
-		textureDescriptorPool = DescriptorPool::Builder(m_device)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1) // Specify the number of textures you'll use
-			.build();
+		m_vertices = builder.vertices;
+		m_indices = builder.indices;
+		m_bbox = createBoundingBox();
+		m_bsphere = createBoundingSphere();
 	}
 
 	Model::~Model() {}
@@ -223,5 +219,39 @@ namespace engine {
 				indices.push_back(uniqueVertices[vertex]);
 			}
 		}
+	}
+
+	BoundingBox Model::createBoundingBox() const {
+		BoundingBox bbox;
+		if (m_vertices.empty()) {
+			bbox.min = bbox.max = glm::vec3(0.0f);
+			return bbox;
+		}
+
+		int i = 0;
+		for (const auto& vertice: m_vertices) {
+			bbox.min = glm::min(bbox.min, vertice.position);
+			bbox.max = glm::max(bbox.max, vertice.position);
+			i++;
+		}
+		return bbox;
+	}
+
+	BoundingSphere Model::createBoundingSphere() const {
+		BoundingSphere bsphere;
+		bsphere.center = glm::vec3(0.0f);
+		bsphere.radius = 0.0f;
+		if (m_vertices.empty()) {
+			return bsphere;
+		}
+		for (const auto& verts : m_vertices) {
+			bsphere.center += verts.position;
+		}
+		bsphere.center /= static_cast<float>(m_vertices.size());
+		for (const auto& verts : m_vertices) {
+			float distSqr = glm::distance(verts.position, bsphere.center);
+			bsphere.radius = glm::max(distSqr, bsphere.radius);
+		}
+		return bsphere;
 	}
 } // namespace engine

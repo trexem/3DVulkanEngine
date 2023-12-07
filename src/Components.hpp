@@ -101,8 +101,11 @@ namespace engine {
         glm::vec3 velocity{ 0.0f, 0.0f, 0.0f };
         glm::vec3 acceleration{ 0.0f, 0.0f, 0.0f };
         bool hasGravity{ true };
-        float gravity { GRAVITY };
+        bool grounded{ false };
+        bool movable{ true };
+        glm::vec3 gravity{ 0.0f, GRAVITY, 0.0f };
         float mass{ 1.0f };
+        float coefRes{ 0.5f };
     };
 
     

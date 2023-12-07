@@ -12,6 +12,22 @@
 #include <vector>
 
 namespace engine {
+
+	struct BoundingBox {
+		glm::vec3 min;
+		glm::vec3 max;
+
+		void scale(glm::vec3 scale) {
+			min *= scale;
+			max *= scale;
+		}
+	};
+
+	struct BoundingSphere {
+		glm::vec3 center;
+		float radius;
+	};
+
 	class Model {
 	public:
 
@@ -37,9 +53,6 @@ namespace engine {
 			void loadModel(const std::string& filepath);
 		};
 
-		bool hasImage() { return m_textureImage != nullptr; }
-		Image* textureImage() { return m_textureImage.get(); }
-
 		Model(Device& device, const Model::Builder& builder);
 		~Model();
 
@@ -52,10 +65,19 @@ namespace engine {
 		void bind(VkCommandBuffer commandBuffer);
 		void draw(VkCommandBuffer commandBuffer);
 		// void drawTexture(VkDescriptorSet set, DescriptorSetLayout& setLayout, DescriptorPool& pool);
+
+		BoundingBox getBoundingBox() const { return m_bbox; };
+		BoundingSphere getBoundingSphere() const { return m_bsphere; };
 	private:
 		void createVertexBuffers(const std::vector<Vertex>& vertices);
 		void createIndexBuffers(const std::vector<uint32_t>& indices);
+		BoundingBox createBoundingBox() const;
+		BoundingSphere createBoundingSphere() const;
 		Device& m_device;
+		std::vector<Vertex> m_vertices{};
+		std::vector<uint32_t> m_indices{};
+		BoundingBox m_bbox;
+		BoundingSphere m_bsphere;
 
 		std::unique_ptr<Buffer> vertexBuffer;
 		uint32_t vertexCount;
@@ -64,11 +86,5 @@ namespace engine {
 		bool hasIndexBuffer = false;
 		bool textureRendered = false;
 		uint32_t indexCount;
-
-		std::unique_ptr<Image> m_textureImage;
-
-		std::unique_ptr<DescriptorSetLayout> textureDescriptorSetLayout;
-		std::unique_ptr<DescriptorPool> textureDescriptorPool;
-		VkDescriptorSet textureDescriptorSet;
 	};
 }

@@ -4,6 +4,7 @@
 #include "KeyboardMovementController.hpp"
 #include "systems/PointLightSystem.hpp"
 #include "systems/PhysicsSystem.hpp"
+#include "systems/CollisionSystem.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -111,10 +112,11 @@ namespace engine
             m_device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
         PhysicsSystem physicsSystem;
+        CollisionSystem collisionSystem;
         Camera camera{};
 
         TransformComponent viewerObject {};
-        viewerObject.translation.z = -2.5f;
+        viewerObject.translation.z = -5.5f;
 
         KeyboardMovementController cameraController{};
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -154,6 +156,7 @@ namespace engine
                 ubo.view = camera.getView();
                 ubo.inverseView = camera.getInverseView();
                 pointLightSysyem.update(frameInfo, ubo);
+                collisionSystem.update(frameInfo);
                 physicsSystem.update(frameInfo);
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
@@ -214,61 +217,73 @@ namespace engine
 
     void App::loadGameObjects()
     {
-        uint32_t flatVase = entityManager.createEntity();
-        std::shared_ptr<Model> model =
-            Model::createModelFromFile(m_device, "models/cube.obj");
+        //****************** CUBE ***********************
+        uint32_t cube = entityManager.createEntity();
+        std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "models/cube.obj");
+        std::cout << "Cube has entityID: " << cube << std::endl;
         
         
-        entityManager.addComponent(flatVase, ComponentType::Model);
-        ModelComponent flatVaseModel;
-        flatVaseModel.model = model;
-        entityManager.setComponentData(flatVase, flatVaseModel);
+        entityManager.addComponent(cube, ComponentType::Model);
+        ModelComponent cubeModel;
+        cubeModel.model = model;
+        entityManager.setComponentData(cube, cubeModel);
         std::shared_ptr<Image> image = std::make_shared<Image>(m_device, "textures/texture.jpg", 0);
-        ImageComponent flatVaseTexture;
+        ImageComponent cubeTexture;
         images.push_back(image);
         std::shared_ptr<Image> bridg4 = std::make_shared<Image>(m_device, "textures/bridge4.jpg", 1);
-        flatVaseTexture.textureInfo.push_back(bridg4->textureInfo());
-        flatVaseTexture.textureInfo.push_back(image->textureInfo());
-        entityManager.addComponent(flatVase, ComponentType::Image);
-        entityManager.setComponentData(flatVase, flatVaseTexture);
+        cubeTexture.textureInfo.push_back(bridg4->textureInfo());
+        cubeTexture.textureInfo.push_back(image->textureInfo());
+        entityManager.addComponent(cube, ComponentType::Image);
+        entityManager.setComponentData(cube, cubeTexture);
         images.push_back(bridg4);
-        entityManager.addComponent(flatVase, ComponentType::Transform);
-        TransformComponent flatVaseTransform{};
-        flatVaseTransform.translation = {-.75f, .5f, 0.f};
-        flatVaseTransform.scale = {1.0f, 1.0f, 1.0f};
-        entityManager.setComponentData(flatVase, flatVaseTransform);
+        entityManager.addComponent(cube, ComponentType::Transform);
+        TransformComponent cubeTransform{};
+        cubeTransform.translation = {-.75f, .5f, 0.f};
+        cubeTransform.scale = {1.0f, 1.0f, 1.0f};
+        entityManager.setComponentData(cube, cubeTransform);
 
+        //****************** SHIP ***********************
         model = Model::createModelFromFile(m_device, "models/shiptest.obj");
-        uint32_t smoothVase = entityManager.createEntity();
-        entityManager.addComponent(smoothVase, ComponentType::Model);
-        ModelComponent smoothVaseModel;
-        smoothVaseModel.model = model;
-        entityManager.setComponentData(smoothVase, smoothVaseModel);
-        entityManager.addComponent(smoothVase, ComponentType::Transform);
-        TransformComponent smoothVaseTransform{};
-        smoothVaseTransform.translation = {.5f, .5f, .0f};
-        smoothVaseTransform.scale = {.02f, .02f, .02f};
-        entityManager.addComponent(smoothVase, ComponentType::Physics);
+        uint32_t ship = entityManager.createEntity();
+        std::cout << "Ship has entityID: " << ship << std::endl;
+        entityManager.addComponent(ship, ComponentType::Model);
+        ModelComponent shipModel;
+        shipModel.model = model;
+        entityManager.setComponentData(ship, shipModel);
+        entityManager.addComponent(ship, ComponentType::Transform);
+        TransformComponent shipTransform{};
+        shipTransform.translation = {.5f, -5.5f, .0f};
+        shipTransform.scale = {.02f, .02f, .02f};
+        entityManager.addComponent(ship, ComponentType::Physics);
         PhysicsComponent physComp{};
         physComp.velocity = {.0f, 0.0f, 0.0f};
-        physComp.acceleration = {.0f, .0f, -.05f };
-        entityManager.setComponentData(smoothVase, physComp);
-        entityManager.setComponentData(smoothVase, smoothVaseTransform);
+        physComp.acceleration = {.0f, .0f, -1.5f };
+        physComp.hasGravity = true;
+        physComp.coefRes = 0.4f;
+        entityManager.setComponentData(ship, physComp);
+        entityManager.setComponentData(ship, shipTransform);
 
-        // model =
-        //     Model::createModelFromFile(m_device, "models/Quad.obj");
-        // uint32_t floor = entityManager.createEntity();
-        
-        // entityManager.addComponent(floor, ComponentType::Model);
-        // ModelComponent floorModel;
-        // floorModel.model = model;
-        // entityManager.setComponentData(floor, floorModel);
+        //****************** FLOOR ***********************
+        model = Model::createModelFromFile(m_device, "models/Quad.obj");
+        uint32_t floor = entityManager.createEntity();
+        std::cout << "Floor has entityID: " << floor << std::endl;
+        entityManager.addComponent(floor, ComponentType::Model);
+        ModelComponent floorModel;
+        floorModel.model = model;
+        entityManager.setComponentData(floor, floorModel);
 
-        // entityManager.addComponent(floor, ComponentType::Transform);
-        // TransformComponent floorTransform{};
-        // floorTransform.translation = {0.f, .5f, 0.f};
-        // floorTransform.scale = {5.0f, 1.0, 5.0};
-        // entityManager.setComponentData(floor, floorTransform);
+        entityManager.addComponent(floor, ComponentType::Transform);
+        TransformComponent floorTransform{};
+        floorTransform.translation = {0.f, 1.5f, 0.f};
+        floorTransform.scale = {5.0f, 1.0, 5.0};
+
+        entityManager.addComponent(floor, ComponentType::Physics);
+        PhysicsComponent floorPhysComp{};
+        floorPhysComp.movable = false;
+        floorPhysComp.coefRes = 1.0f;
+        floorPhysComp.hasGravity = false;
+        entityManager.setComponentData(floor, floorPhysComp);
+        entityManager.setComponentData(floor, floorTransform);
 
         std::vector<glm::vec3> lightColors{
             {.8f, 0.f, 0.f},
