@@ -18,13 +18,9 @@ namespace engine {
                 TransformComponent transComp = 
                     frameInfo.entityManager.getComponentData<TransformComponent>(entityID);
                 if (physComp.hasGravity && !physComp.grounded) {
-                    std::cout << "Moving with gravity: " << entityID << std::endl;
                     physComp.velocity += (physComp.acceleration + physComp.gravity) * frameInfo.frameTime;
-                    std::cout << "vel(" << physComp.velocity.x << ", " << physComp.velocity.y << ", " << physComp.velocity.z << ")" << std::endl;
                 } else {
-                    std::cout << "Moving without gravity: " << entityID << std::endl;
                     physComp.velocity += physComp.acceleration * frameInfo.frameTime;
-                    std::cout << "vel(" << physComp.velocity.x << ", " << physComp.velocity.y << ", " << physComp.velocity.z << ")" << std::endl;
                 }
                 transComp.translation += physComp.velocity * frameInfo.frameTime;
 

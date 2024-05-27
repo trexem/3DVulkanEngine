@@ -31,7 +31,6 @@ namespace engine
                     .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, images.size())
                     .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, images.size())
                     .build();
-        std::cout << "Succesfully createdTexturePools with imageSize: " << images.size() << std::endl;
     }
 
     App::~App() {}
@@ -71,7 +70,6 @@ namespace engine
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-            std::cout << "Succesfully maped textureBuffer number: " << i << std::endl;
             textureBuffers[i]->map();
         }
 
@@ -79,13 +77,10 @@ namespace engine
                                 .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
                                 .addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                                 .build();
-
         
         std::vector<VkDescriptorSet> textureDescriptorSets(images.size());
-        std::vector<bool> imageAdded(images.size());
         for (const uint32_t entityID : entityManager.getEntitiesWithComponent(ComponentType::Image)) {
             if (entityManager.entityExists(entityID)) {
-                std::cout << "Entity id: " << entityID << " has ";
                 ImageComponent imageComponent = entityManager.getComponentData<ImageComponent>(entityID);
                 for (auto& imageIndex : imageComponent.imagesIndex) {
                     auto texInfo = images.at(imageIndex)->textureInfo();
@@ -93,7 +88,6 @@ namespace engine
                     if (texInfo.imageView == VK_NULL_HANDLE || texInfo.descriptorInfo.imageView == VK_NULL_HANDLE)  {
                         throw std::runtime_error("Invalid VkImageView handle in TextureInfo!");
                     }
-                    std::cout << "image: " << imageIndex << " ";
                     auto bufferInfo = buffer->descriptorInfo();
                     DescriptorWriter(*textureSetLayout, *texturePool)
                         .writeImage(0,&texInfo.descriptorInfo)
@@ -101,21 +95,15 @@ namespace engine
                         .build(textureDescriptorSets.at(imageIndex));
                     imageComponent.pDescriptorSet.emplace_back(&textureDescriptorSets.at(imageIndex));
                     imageComponent.textureBufferIndex.emplace_back(imageIndex);
-                    imageAdded.at(imageIndex) = true;
                 }
-                std::cout << std::endl;
                 entityManager.setComponentData<ImageComponent>(entityID, imageComponent);
             }
         }
-
-        std::cout << "Succesfully created descriptorSets" << std::endl;
 
         SimpleRenderSystem simpleRenderSystem{
             m_device, renderer.getSwapChainRenderPass(), 
             globalSetLayout->getDescriptorSetLayout(), textureSetLayout->getDescriptorSetLayout()};
         
-        std::cout << "Succesfully initialized simpleRenderSystem" << std::endl;
-
         PointLightSystem pointLightSysyem{
             m_device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
@@ -168,8 +156,6 @@ namespace engine
                 physicsSystem.update(frameInfo);
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
-
-                std::cout << "Succesfully updated systems and uboBuffer" << std::endl;
 
                 // render
                 renderer.beginSwapChainRenderPass(commandBuffer);
@@ -229,10 +215,7 @@ namespace engine
         images.push_back(entityManager.noTexture);
         //****************** CUBE ***********************
         uint32_t cube = entityManager.createEntity();
-        std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "models/cube.obj");
-        std::cout << "Cube has entityID: " << cube << std::endl;
-        
-        
+        std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "models/cube.obj");        
         ImageComponent cubeTexture;
         std::shared_ptr<Image> image = std::make_shared<Image>(m_device, "textures/texture.jpg", 0);
         images.push_back(image);
@@ -257,7 +240,6 @@ namespace engine
         //****************** SHIP ***********************
         model = Model::createModelFromFile(m_device, "models/shiptest.obj");
         uint32_t ship = entityManager.createEntity();
-        std::cout << "Ship has entityID: " << ship << std::endl;
         entityManager.addComponent(ship, ComponentType::Model);
         ModelComponent shipModel;
         shipModel.model = model;
@@ -278,7 +260,6 @@ namespace engine
         //****************** FLOOR ***********************
         model = Model::createModelFromFile(m_device, "models/Quad.obj");
         uint32_t floor = entityManager.createEntity();
-        std::cout << "Floor has entityID: " << floor << std::endl;
         entityManager.addComponent(floor, ComponentType::Model);
         ModelComponent floorModel;
         floorModel.model = model;

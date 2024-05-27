@@ -101,16 +101,13 @@ namespace engine {
                     &push
                 );
                 if (frameInfo.entityManager.hasComponent<ImageComponent>(entityID)){
-                    std::cout << "Rendering: " << entityID << std::endl;
                     int i = 0;
                     ImageComponent imageComponent = 
                         frameInfo.entityManager.getComponentData<ImageComponent>(entityID);
                     for (const auto pDescriptor : imageComponent.pDescriptorSet) {
-                        std::cout << "Rendering i: " << i << std::endl;
                         TextureData tex{};
                         tex.texIndex = imageComponent.textureBufferIndex.at(i);
                         frameInfo.textureBuffers[imageComponent.textureBufferIndex.at(i)]->writeToBuffer(&tex);
-                        std::cout << "Wrote to texBufferIndex " << i << " the value: " << tex.texIndex << std::endl;
                         frameInfo.textureBuffers[imageComponent.textureBufferIndex.at(i)]->flush();
                         vkCmdBindDescriptorSets(
                             frameInfo.commandBuffer,

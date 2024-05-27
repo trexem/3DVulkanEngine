@@ -45,7 +45,6 @@ namespace engine {
 
         // Add ImageComponent if ModelComponent is being added
         if (type == ComponentType::Model && !hasComponent<ImageComponent>(entityID)) {
-            std::cout << "Adding noTextureComponent to: " << entityID << std::endl;
             entityComponentMasks[entityID][static_cast<size_t>(ComponentType::Image)] = true;
             if (componentPools[static_cast<size_t>(ComponentType::Image)].size() <= entityID) {
                 componentPools[static_cast<size_t>(ComponentType::Image)].resize(entityID + 1);
