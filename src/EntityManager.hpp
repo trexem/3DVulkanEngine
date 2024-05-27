@@ -11,7 +11,7 @@
 namespace engine {
     class EntityManager {
     public:
-        EntityManager(size_t maxEntities);
+        EntityManager(size_t t_maxEntities, Device& device);
         ~EntityManager();
 
         uint32_t createEntity();
@@ -60,7 +60,7 @@ namespace engine {
         }
 
         std::vector<uint32_t> getEntitiesWithComponent(ComponentType type);
-
+        std::shared_ptr<Image> noTexture;
     private:
         uint32_t findAvailableEntityID();
 
@@ -83,6 +83,8 @@ namespace engine {
         size_t entityCount = 0;
         std::vector<uint32_t> entities;
         std::vector<std::bitset<64>> entityComponentMasks;
+
+    	ImageComponent noTextureComp;
 
         std::vector<std::vector<std::shared_ptr<void>>> componentPools;
     };

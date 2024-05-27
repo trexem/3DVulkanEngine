@@ -32,6 +32,6 @@ namespace engine {
 
 		std::unique_ptr<DescriptorPool> globalPool{};
 		std::unique_ptr<DescriptorPool> texturePool{};
-		EntityManager entityManager = EntityManager(MAX_ENTITIES);
+		EntityManager entityManager = EntityManager(MAX_ENTITIES, m_device);
 	};
 } // namespace engine

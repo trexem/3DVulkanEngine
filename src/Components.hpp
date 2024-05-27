@@ -94,6 +94,7 @@ namespace engine {
     struct ImageComponent {
         std::vector<VkDescriptorSet*> pDescriptorSet;
         std::vector<TextureInfo> textureInfo;
+        std::vector<uint16_t> imagesIndex;
         std::vector<uint16_t> textureBufferIndex;
     };
 
@@ -107,7 +108,4 @@ namespace engine {
         float mass{ 1.0f };
         float coefRes{ 0.5f };
     };
-
-    
-    
 } //namepsace engine

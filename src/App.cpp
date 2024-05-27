@@ -19,7 +19,6 @@
 
 namespace engine
 {
-
     App::App()
     {
         globalPool = DescriptorPool::Builder(m_device)
@@ -32,7 +31,7 @@ namespace engine
                     .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, images.size())
                     .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, images.size())
                     .build();
-
+        std::cout << "Succesfully createdTexturePools with imageSize: " << images.size() << std::endl;
     }
 
     App::~App() {}
@@ -72,6 +71,7 @@ namespace engine
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            std::cout << "Succesfully maped textureBuffer number: " << i << std::endl;
             textureBuffers[i]->map();
         }
 
@@ -81,32 +81,40 @@ namespace engine
                                 .build();
 
         
-        std::vector<VkDescriptorSet> globalTextureDescriptorSets(images.size());
-        int textureIterator = 0;
+        std::vector<VkDescriptorSet> textureDescriptorSets(images.size());
+        std::vector<bool> imageAdded(images.size());
         for (const uint32_t entityID : entityManager.getEntitiesWithComponent(ComponentType::Image)) {
             if (entityManager.entityExists(entityID)) {
+                std::cout << "Entity id: " << entityID << " has ";
                 ImageComponent imageComponent = entityManager.getComponentData<ImageComponent>(entityID);
-                for (auto& texInfo : imageComponent.textureInfo) {
+                for (auto& imageIndex : imageComponent.imagesIndex) {
+                    auto texInfo = images.at(imageIndex)->textureInfo();
+                    auto& buffer = textureBuffers[imageIndex];
                     if (texInfo.imageView == VK_NULL_HANDLE || texInfo.descriptorInfo.imageView == VK_NULL_HANDLE)  {
                         throw std::runtime_error("Invalid VkImageView handle in TextureInfo!");
                     }
-                    auto bufferInfo = textureBuffers[textureIterator]->descriptorInfo();
+                    std::cout << "image: " << imageIndex << " ";
+                    auto bufferInfo = buffer->descriptorInfo();
                     DescriptorWriter(*textureSetLayout, *texturePool)
                         .writeImage(0,&texInfo.descriptorInfo)
                         .writeBuffer(1,&bufferInfo)
-                        .build(globalTextureDescriptorSets.at(textureIterator));
-
-                    imageComponent.pDescriptorSet.emplace_back(&globalTextureDescriptorSets.at(textureIterator));
-                    imageComponent.textureBufferIndex.emplace_back(textureIterator);
-                    textureIterator++;
+                        .build(textureDescriptorSets.at(imageIndex));
+                    imageComponent.pDescriptorSet.emplace_back(&textureDescriptorSets.at(imageIndex));
+                    imageComponent.textureBufferIndex.emplace_back(imageIndex);
+                    imageAdded.at(imageIndex) = true;
                 }
+                std::cout << std::endl;
                 entityManager.setComponentData<ImageComponent>(entityID, imageComponent);
             }
         }
 
+        std::cout << "Succesfully created descriptorSets" << std::endl;
+
         SimpleRenderSystem simpleRenderSystem{
             m_device, renderer.getSwapChainRenderPass(), 
             globalSetLayout->getDescriptorSetLayout(), textureSetLayout->getDescriptorSetLayout()};
+        
+        std::cout << "Succesfully initialized simpleRenderSystem" << std::endl;
 
         PointLightSystem pointLightSysyem{
             m_device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
@@ -160,6 +168,8 @@ namespace engine
                 physicsSystem.update(frameInfo);
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
+
+                std::cout << "Succesfully updated systems and uboBuffer" << std::endl;
 
                 // render
                 renderer.beginSwapChainRenderPass(commandBuffer);
@@ -215,27 +225,29 @@ namespace engine
         }
     }
 
-    void App::loadGameObjects()
-    {
+    void App::loadGameObjects() {
+        images.push_back(entityManager.noTexture);
         //****************** CUBE ***********************
         uint32_t cube = entityManager.createEntity();
         std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "models/cube.obj");
         std::cout << "Cube has entityID: " << cube << std::endl;
         
         
+        ImageComponent cubeTexture;
+        std::shared_ptr<Image> image = std::make_shared<Image>(m_device, "textures/texture.jpg", 0);
+        images.push_back(image);
+        std::shared_ptr<Image> bridg4 = std::make_shared<Image>(m_device, "textures/bridge4.jpg", 1);
+        images.push_back(bridg4);
+        cubeTexture.imagesIndex.push_back(1);
+        cubeTexture.textureInfo.push_back(image->textureInfo());
+        cubeTexture.imagesIndex.push_back(2);
+        cubeTexture.textureInfo.push_back(bridg4->textureInfo());
+        entityManager.addComponent(cube, ComponentType::Image);
+        entityManager.setComponentData(cube, cubeTexture);
         entityManager.addComponent(cube, ComponentType::Model);
         ModelComponent cubeModel;
         cubeModel.model = model;
         entityManager.setComponentData(cube, cubeModel);
-        std::shared_ptr<Image> image = std::make_shared<Image>(m_device, "textures/texture.jpg", 0);
-        ImageComponent cubeTexture;
-        images.push_back(image);
-        std::shared_ptr<Image> bridg4 = std::make_shared<Image>(m_device, "textures/bridge4.jpg", 1);
-        cubeTexture.textureInfo.push_back(bridg4->textureInfo());
-        cubeTexture.textureInfo.push_back(image->textureInfo());
-        entityManager.addComponent(cube, ComponentType::Image);
-        entityManager.setComponentData(cube, cubeTexture);
-        images.push_back(bridg4);
         entityManager.addComponent(cube, ComponentType::Transform);
         TransformComponent cubeTransform{};
         cubeTransform.translation = {-.75f, .5f, 0.f};

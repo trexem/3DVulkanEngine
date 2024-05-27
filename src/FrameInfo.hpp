@@ -23,7 +23,7 @@ namespace engine {
     };
 
 	struct TextureData {
-		int textureIndex;
+		int texIndex;
 	};
 
 	struct FrameInfo {

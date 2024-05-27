@@ -3,11 +3,15 @@
 #include <cassert>
 #include <iostream>
 
+
 namespace engine {
-    EntityManager::EntityManager(size_t t_maxEntities) : maxEntities{t_maxEntities} {
+    EntityManager::EntityManager(size_t t_maxEntities, Device& device) : maxEntities{t_maxEntities} {
         entities.reserve(maxEntities);
         entityComponentMasks.resize(maxEntities);
         componentPools.resize(static_cast<size_t>(ComponentType::Count));
+        noTexture = std::make_shared<Image>(device, "textures/noTexture.png", 0);
+        noTextureComp.imagesIndex.push_back(0);
+        noTextureComp.textureInfo.push_back(noTexture->textureInfo());
     }
 
     EntityManager::~EntityManager() {
@@ -39,8 +43,21 @@ namespace engine {
     void EntityManager::addComponent(uint32_t entityID, ComponentType type) {
         assert(entityID < maxEntities);
 
+        // Add ImageComponent if ModelComponent is being added
+        if (type == ComponentType::Model && !hasComponent<ImageComponent>(entityID)) {
+            std::cout << "Adding noTextureComponent to: " << entityID << std::endl;
+            entityComponentMasks[entityID][static_cast<size_t>(ComponentType::Image)] = true;
+            if (componentPools[static_cast<size_t>(ComponentType::Image)].size() <= entityID) {
+                componentPools[static_cast<size_t>(ComponentType::Image)].resize(entityID + 1);
+            }
+            componentPools[static_cast<size_t>(ComponentType::Image)][entityID] = nullptr;
+            // Add default noTexture
+            this->setComponentData(entityID, noTextureComp);
+        }
+        
+
         // Add TransformComponent if PhysicsComponent is being added
-        if (type == ComponentType::Physics) {
+        if (type == ComponentType::Physics && !hasComponent<TransformComponent>(entityID)) {
             entityComponentMasks[entityID][static_cast<size_t>(ComponentType::Transform)] = true;
             if (componentPools[static_cast<size_t>(ComponentType::Transform)].size() <= entityID) {
                 componentPools[static_cast<size_t>(ComponentType::Transform)].resize(entityID + 1);
