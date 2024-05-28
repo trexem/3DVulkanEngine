@@ -3,7 +3,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <iostream>
 #ifndef ENGINE_DIR
 #define ENGINE_DIR "../"
 #endif // !ENGINE_DIR

@@ -8,7 +8,6 @@
 #include <stdexcept>
 #include <array>
 #include <cassert>
-#include <iostream>
 
 namespace engine {
 

@@ -1,8 +1,6 @@
 #include "EntityManager.hpp"
 
 #include <cassert>
-#include <iostream>
-
 
 namespace engine {
     EntityManager::EntityManager(size_t t_maxEntities, Device& device) : maxEntities{t_maxEntities} {

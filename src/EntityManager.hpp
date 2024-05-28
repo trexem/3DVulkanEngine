@@ -6,7 +6,6 @@
 #include <bitset>
 #include <algorithm>
 #include <memory>
-#include <iostream>
 
 namespace engine {
     class EntityManager {

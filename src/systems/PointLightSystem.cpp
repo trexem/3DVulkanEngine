@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <array>
 #include <cassert>
-#include <iostream>
+#include <map>
 
 namespace engine
 {
@@ -60,6 +60,7 @@ namespace engine
 
         PipelineConfigInfo pipelineConfig{};
         Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+        Pipeline::enableAlphaBlending(pipelineConfig);
         pipelineConfig.attributeDescriptions.clear();
         pipelineConfig.bindingDescriptions.clear();
 
@@ -96,8 +97,16 @@ namespace engine
         ubo.numLights = lightIndex;
     }
 
-    void PointLightSystem::render(FrameInfo &frameInfo)
-    {
+    void PointLightSystem::render(FrameInfo &frameInfo) {
+        //Sort lights
+        std::map<float, uint32_t> sorted;
+        for (auto &entityId : frameInfo.entityManager.getEntitiesWithComponent(ComponentType::PointLight)) {
+            auto transformComponent = frameInfo.entityManager.getComponentData<TransformComponent>(entityId);
+            auto offset = frameInfo.camera.getPosition() - transformComponent.translation;
+            float distSquared = glm::dot(offset, offset);
+            sorted[distSquared] = entityId;
+        }
+
         m_pipeline->bind(frameInfo.commandBuffer);
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
@@ -109,10 +118,9 @@ namespace engine
             0,
             nullptr);
 
-        for (auto &entityId : frameInfo.entityManager.getEntitiesWithComponent(ComponentType::PointLight))
-        {
-            auto transformComponent = frameInfo.entityManager.getComponentData<TransformComponent>(entityId);
-            auto pointLightComponent = frameInfo.entityManager.getComponentData<PointLightComponent>(entityId);
+        for (auto entityId = sorted.rbegin(); entityId != sorted.rend(); ++entityId) {
+            auto transformComponent = frameInfo.entityManager.getComponentData<TransformComponent>(entityId->second);
+            auto pointLightComponent = frameInfo.entityManager.getComponentData<PointLightComponent>(entityId->second);
 
             PointLightPushConstants push{};
             push.position = glm::vec4(transformComponent.translation, 1.f);

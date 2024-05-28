@@ -2,8 +2,6 @@
 
 #include "Components.hpp"
 
-#include <iostream>
-
 namespace engine {
 
     CollisionSystem::CollisionSystem() {
