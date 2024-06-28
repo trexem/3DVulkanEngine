@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.hpp"
+#include "Octree.hpp"
 #include "Image.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,6 +16,7 @@ namespace engine {
         PointLight,
         Model,
         Image,
+        Octree,
         // Add more component types as needed
 
         Count
@@ -107,5 +109,25 @@ namespace engine {
         glm::vec3 gravity{ 0.0f, GRAVITY, 0.0f };
         float mass{ 1.0f };
         float coefRes{ 0.5f };
+    };
+
+    struct OctreeComponent {
+        Octree octree;
+
+        // Move constructor
+        OctreeComponent(OctreeComponent&& other) noexcept
+            : octree(std::move(other.octree)) {}
+
+        // Move assignment operator
+        OctreeComponent& operator=(OctreeComponent&& other) noexcept {
+            if (this != &other) {
+                octree = std::move(other.octree);
+            }
+            return *this;
+        }
+
+        // Delete copy constructor and copy assignment operator
+        OctreeComponent(const OctreeComponent&) = delete;
+        OctreeComponent& operator=(const OctreeComponent&) = delete;
     };
 } //namepsace engine
